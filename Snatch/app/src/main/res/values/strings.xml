@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Snatch</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="phone_number_plus">Número de móvil (+XXYZZZZZZZZ)</string>
+    <string name="create_account">Crear cuenta</string>
+    <string name="email">Correo electrónico</string>
+    <string name="name">Nombre</string>
+    <string name="choose_image_origin">Cargar imagen de perfil desde</string>
+    <string name="camera">Cámara</string>
+    <string name="gallery">Galería</string>
+    <string name="choose_a_picture">Elige una foto</string>
+    <string name="password">Contraseña</string>
+    <string name="lastName">Apellido</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_snatch">Snatch</string>
+    <string name="snatch">Snatch</string>
+
+</resources>

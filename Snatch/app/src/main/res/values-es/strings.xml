@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="phone_number_plus">Número de móvil (+XXYZZZZZZZZ)</string>
+    <string name="create_account">Crear cuenta</string>
+    <string name="email">Correo electrónico</string>
+    <string name="name">Nombre</string>
+    <string name="choose_image_origin">Cargar imagen de perfil desde</string>
+    <string name="camera">Cámara</string>
+    <string name="gallery">Galería</string>
+    <string name="choose_a_picture">Elige una foto</string>
+    <string name="password">Contraseña</string>
+    <string name="lastName">Apellido</string>
+    <string name="snatch">Snatch</string>
+</resources>
