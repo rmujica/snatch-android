@@ -23,7 +23,6 @@ import cl.snatch.snatch.adapters.SectionsPagerAdapter;
 
 public class MainActivity extends ActionBarActivity implements ActionBar.TabListener {
 
-    private static final int PICK_CONTACT = 1;
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -44,10 +43,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // are we logged in?
-        ParseUser currentUser = ParseUser.getCurrentUser();
-
-        // Set up the action bar.
+        // Set up the action bar. todo: use toolbar
         final ActionBar actionBar = getSupportActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 

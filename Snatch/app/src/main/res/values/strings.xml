@@ -4,16 +4,16 @@
     <string name="app_name">Snatch</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="phone_number_plus">Número de móvil (+XXYZZZZZZZZ)</string>
-    <string name="create_account">Crear cuenta</string>
-    <string name="email">Correo electrónico</string>
-    <string name="name">Nombre</string>
-    <string name="choose_image_origin">Cargar imagen de perfil desde</string>
-    <string name="camera">Cámara</string>
-    <string name="gallery">Galería</string>
-    <string name="choose_a_picture">Elige una foto</string>
-    <string name="password">Contraseña</string>
-    <string name="lastName">Apellido</string>
+    <string name="phone_number_plus">Mobile phone (+XXYZZZZZZZZ)</string>
+    <string name="create_account">Create account</string>
+    <string name="email">Email</string>
+    <string name="name">First Name</string>
+    <string name="choose_image_origin">Load profile picture from</string>
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
+    <string name="choose_a_picture">Choose a picture</string>
+    <string name="password">Password</string>
+    <string name="lastName">Last Name</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="title_section1">Section 1</string>
     <string name="title_section2">Section 2</string>
@@ -21,5 +21,12 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_snatch">Snatch</string>
     <string name="snatch">Snatch</string>
+    <string name="action_snatch">Snatch</string>
+    <string name="contacts_snatched">Contacts snatched!</string>
+    <string name="sms_verification">To verify your phone number, you will be sent a verification code via SMS. You will have to enter this code on the next screen.</string>
+    <string name="send_sms">Send SMS</string>
+    <string name="verification_code">Verification code</string>
+    <string name="reach">Reach</string>
+    <string name="search_query">Search for contacts...</string>
 
 </resources>

@@ -11,6 +11,7 @@ import cl.snatch.snatch.activities.MainActivity;
 import cl.snatch.snatch.fragments.ContactsFragment;
 import cl.snatch.snatch.fragments.FriendsFragment;
 import cl.snatch.snatch.fragments.PlaceholderFragment;
+import cl.snatch.snatch.fragments.SnatchFragment;
 
 /**
  * A {@link android.support.v4.app.FragmentPagerAdapter} that returns a fragment corresponding to
@@ -31,10 +32,11 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
         // Return a PlaceholderFragment (defined as a static inner class below).
         switch (position) {
             case 0:
-                return FriendsFragment.newInstance(1);
+                return FriendsFragment.newInstance();
             case 2:
-                return ContactsFragment.newInstance(3);
+                return ContactsFragment.newInstance();
             case 1:
+                return SnatchFragment.newInstance();
             default:
                 return PlaceholderFragment.newInstance(position + 1);
         }
@@ -53,9 +55,9 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
             case 0:
                 return "Amigos".toUpperCase(l);
             case 1:
-                return mainActivity.getString(R.string.title_section2).toUpperCase(l);
+                return "Snatch".toUpperCase(l);
             case 2:
-                return mainActivity.getString(R.string.title_section3).toUpperCase(l);
+                return "Contactos".toUpperCase(l);
         }
         return null;
     }

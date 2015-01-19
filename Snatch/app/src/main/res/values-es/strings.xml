@@ -11,4 +11,13 @@
     <string name="password">Contraseña</string>
     <string name="lastName">Apellido</string>
     <string name="snatch">Snatch</string>
+    <string name="action_snatch">Snatch</string>
+    <string name="action_settings">Configuración</string>
+    <string name="app_name">Snatch</string>
+    <string name="contacts_snatched">Contacts snatched!</string>
+    <string name="sms_verification">A SMS will be sent to the number you entered, to verify.</string>
+    <string name="send_sms">Send SMS</string>
+    <string name="verification_code">Verification code</string>
+    <string name="reach">Reach</string>
+    <string name="search_query">Search for contacts...</string>
 </resources>

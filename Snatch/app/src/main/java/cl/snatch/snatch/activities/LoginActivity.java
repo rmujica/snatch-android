@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,8 +16,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.parse.FunctionCallback;
+import com.parse.GetCallback;
+import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseFile;
+import com.parse.ParseObject;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.parse.SignUpCallback;
@@ -25,6 +30,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import cl.snatch.snatch.helpers.MediaHelper;
 import cl.snatch.snatch.R;
@@ -43,9 +50,9 @@ public class LoginActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
 
         ParseUser currentUser = ParseUser.getCurrentUser();
-        if (currentUser != null) {
+        if (currentUser != null && currentUser.getBoolean("verified")) {
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            startActivity(intent); // for result??
+            startActivity(intent);
             finish();
         }
 
@@ -95,44 +102,106 @@ public class LoginActivity extends ActionBarActivity {
         });
 
         final Button register = (Button) findViewById(R.id.register);
+        final Button verify = (Button) findViewById(R.id.verify);
+        verify.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                verify.setEnabled(false);
+                ParseUser.getCurrentUser().fetchInBackground(new GetCallback<ParseUser>() {
+                    @Override
+                    public void done(ParseUser user, ParseException e) {
+                        if (e == null) {
+                            if (user.getNumber("phoneVerificationCode").equals(Integer.parseInt(((TextView) findViewById(R.id.code)).getText().toString()))) {
+                                ParseUser u = ParseUser.getCurrentUser();
+                                u.put("verified", true);
+                                u.saveInBackground(new SaveCallback() {
+                                    @Override
+                                    public void done(ParseException e) {
+                                        if (e == null) {
+                                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                            startActivity(intent); // for result??
+                                            finish();
+                                        } else {
+                                            Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
+                                        }
+                                    }
+                                });
+                            } else {
+                                Log.d("cl.snatch.snatch", "neq: " + String.valueOf(user.getNumber("phoneVerificationCode")) + " " + ((TextView) findViewById(R.id.code)).getText().toString());
+                            }
+                        } else {
+                            Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
+                        }
+                    }
+                });
+            }
+        });
         register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 register.setEnabled(false);
                 // send data to parse
                 final ParseUser myUser = new ParseUser();
-                myUser.setUsername(((TextView) findViewById(R.id.email)).getText().toString());
-                myUser.setEmail(((TextView) findViewById(R.id.email)).getText().toString());
-                myUser.setPassword(((TextView) findViewById(R.id.password)).getText().toString());
+                myUser.setUsername(((TextView) findViewById(R.id.phone)).getText().toString());
+                myUser.setPassword("asdf");
                 myUser.put("firstName", ((TextView) findViewById(R.id.firstName)).getText().toString());
                 myUser.put("lastName", ((TextView) findViewById(R.id.lastName)).getText().toString());
+                myUser.put("fullName", ((TextView) findViewById(R.id.firstName)).getText().toString() + " " + ((TextView) findViewById(R.id.lastName)).getText().toString());
                 myUser.put("phoneNumber", ((TextView) findViewById(R.id.phone)).getText().toString());
+                myUser.put("reach", 0);
+                myUser.put("verified", false);
                 try {
-                    myUser.put("friends", new JSONArray("[\"FL8A99SeGR\",\"1sMQiLxN4I\"]"));
+                    myUser.put("friends", new JSONArray("[\"FL8A99SeGR\",\"1sMQiLxN4I\", \"ljIIcIGZUL\"]"));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                myUser.put("contactsSnatched", new JSONArray());
 
                 // save bitmap as byte
                 if (avatarBitmap != null) {
                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
                     avatarBitmap.compress(Bitmap.CompressFormat.JPEG, 75, stream);
                     byte[] bitmapByte = stream.toByteArray();
-                    final ParseFile avatar = new ParseFile(((TextView) findViewById(R.id.email)).getText().toString()+".jpg", bitmapByte);
+                    final ParseFile avatar = new ParseFile(((TextView) findViewById(R.id.phone)).getText().toString().substring(1)+".jpg", bitmapByte);
                     avatar.saveInBackground(new SaveCallback() {
                         @Override
                         public void done(ParseException e) {
-                            myUser.put("profilePicture", avatar);
-                            myUser.signUpInBackground(new SignUpCallback() {
-                                @Override
-                                public void done(ParseException e) {
-                                    // go to login
-                                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                    startActivity(intent); // for result??
-                                    finish();
-                                }
-                            });
+                            if (e == null) {
+                                myUser.put("profilePicture", avatar);
+                                myUser.signUpInBackground(new SignUpCallback() {
+                                    @Override
+                                    public void done(ParseException e) {
+                                        // go to login
+                                        if (e == null) {
+                                            verify.setVisibility(View.VISIBLE);
+                                            findViewById(R.id.firstName).setVisibility(View.INVISIBLE);
+                                            findViewById(R.id.lastName).setVisibility(View.INVISIBLE);
+                                            findViewById(R.id.phone).setVisibility(View.INVISIBLE);
+                                            findViewById(R.id.code).setVisibility(View.VISIBLE);
+                                            findViewById(R.id.sms_txt).setVisibility(View.INVISIBLE);
+                                            findViewById(R.id.avatar).setVisibility(View.INVISIBLE);
+                                            register.setVisibility(View.INVISIBLE);
+
+                                            Map<String, Object> params = new HashMap<>();
+                                            params.put("phoneNumber", myUser.getString("phoneNumber"));
+                                            ParseCloud.callFunctionInBackground("sendVerificationCode", params, new FunctionCallback<Object>() {
+                                                @Override
+                                                public void done(Object o, ParseException e) {
+                                                    if (e != null)
+                                                    Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
+                                                    else Log.d("cl.snatch.snatch", "noerr: " + o.toString());
+                                                }
+                                            });
+                                            /*Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                            startActivity(intent); // for result??
+                                            finish();*/
+                                        } else {
+                                            Log.d("cl.snatch.snatch", "pp: " + e.getMessage());
+                                        }
+                                    }
+                                });
+                            } else {
+                                Log.d("cl.snatch.snatch", "pu: " + e.getMessage());
+                            }
                         }
                     });
 
@@ -140,15 +209,39 @@ public class LoginActivity extends ActionBarActivity {
                     myUser.signUpInBackground(new SignUpCallback() {
                         @Override
                         public void done(ParseException e) {
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            startActivity(intent); // for result??
-                            finish();
+                            if (e == null) {
+                                verify.setVisibility(View.VISIBLE);
+                                findViewById(R.id.firstName).setVisibility(View.INVISIBLE);
+                                findViewById(R.id.lastName).setVisibility(View.INVISIBLE);
+                                findViewById(R.id.phone).setVisibility(View.INVISIBLE);
+                                findViewById(R.id.code).setVisibility(View.VISIBLE);
+                                findViewById(R.id.sms_txt).setVisibility(View.INVISIBLE);
+                                findViewById(R.id.avatar).setVisibility(View.INVISIBLE);
+                                register.setVisibility(View.INVISIBLE);
+
+                                Map<String, Object> params = new HashMap<>();
+                                params.put("phoneNumber", myUser.getString("phoneNumber"));
+                                ParseCloud.callFunctionInBackground("sendVerificationCode", params,  new FunctionCallback<Object>() {
+                                    @Override
+                                    public void done(Object o, ParseException e) {
+                                        if (e != null)
+                                            Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
+                                        else Log.d("cl.snatch.snatch", "noerr: " + o.toString());
+                                    }
+                                });
+                                /*Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                startActivity(intent); // for result??
+                                finish();*/
+                            } else {
+                                Log.d("cl.snatch.snatch", "np: " + e.getMessage());
+                            }
                         }
                     });
                     register.setEnabled(true);
                 }
             }
         });
+
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

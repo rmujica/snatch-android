@@ -38,12 +38,8 @@ public class FriendsFragment extends Fragment {
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static FriendsFragment newInstance(int sectionNumber) {
-        FriendsFragment fragment = new FriendsFragment();
-        /*Bundle args = new Bundle();
-        args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-        fragment.setArguments(args);*/
-        return fragment;
+    public static FriendsFragment newInstance() {
+        return new FriendsFragment();
     }
 
     public FriendsFragment() {
@@ -104,6 +100,7 @@ public class FriendsFragment extends Fragment {
                             }
                         });
                     }
+                    Log.d("cl.snatch.snatch", "friends: " + parseUsers.toString());
                     adapter.updateFriends(parseUsers);
                 } else {
                     Log.d("cl.snatch.snatch", "error: " + e.getMessage());

@@ -16,6 +16,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import org.json.JSONArray;
@@ -43,12 +47,8 @@ public class ContactsFragment extends Fragment implements LoaderManager.LoaderCa
     ContactsAdapter adapter;
     RecyclerView.LayoutManager layoutManager;
 
-    public static ContactsFragment newInstance(int sectionNumber) {
-        ContactsFragment fragment = new ContactsFragment();
-        /*Bundle args = new Bundle();
-        args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-        fragment.setArguments(args);*/
-        return fragment;
+    public static ContactsFragment newInstance() {
+        return new ContactsFragment();
     }
 
     public ContactsFragment() {
@@ -61,28 +61,11 @@ public class ContactsFragment extends Fragment implements LoaderManager.LoaderCa
         adapter = new ContactsAdapter();
 
         // Inflate the layout for this fragment if needed
-        //JSONArray contactsSnatched = ParseUser.getCurrentUser().getJSONArray("contactsSnatched");
-        getLoaderManager().initLoader(CONTACTS_LOADER_ID,
-                null,
-                this);/* else {
-            // load contacts from parse
-            List<String[]> contacts = new ArrayList<>();
-            for (int i = 0; i < contactsSnatched.length(); i++) {
-                try {
-                    JSONObject contact = contactsSnatched.getJSONObject(i);
-                    String name = contact.getString("firstName") + (contact.has("lastName") ? contact.getString("lastName") : "");
-                    String phone = contact.getString("phoneNumber");
-                    String type = (String) ContactsContract.CommonDataKinds.Phone
-                            .getTypeLabel(getResources(), ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE, "");
-                    contacts.add(new String[] {name, phone, type});
-                } catch (JSONException e) {
-                    Log.d("cl.snatch.snatch", "json error: " + e.getMessage());
-                }
-            }
-            adapter.updateContacts(contacts);
-        }*/
         View rootView = inflater.inflate(R.layout.fragment_contacts, container, false);
 
+        getLoaderManager().initLoader(CONTACTS_LOADER_ID,
+                null,
+                this);
         list = (RecyclerView) rootView.findViewById(R.id.list);
         list.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(getActivity());
@@ -140,21 +123,25 @@ public class ContactsFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     private List<String[]> contactsFromCursor(Cursor cursor) {
-        List<String[]> contacts = new ArrayList<>();
-        JSONArray snatched = ParseUser.getCurrentUser().getJSONArray("contactsSnatched");
-        Set<String> phones = new HashSet<>(snatched.length());
-        for (int i = 0; i < snatched.length(); i++) {
-            try {
-                Object s = snatched.get(i);
-                JSONObject snatch;
-                if (s instanceof JSONObject) snatch = (JSONObject) s;
-                else /*if (s instanceof Map)*/ snatch = new JSONObject((Map) s);
-                phones.add(snatch.getString("phoneNumber"));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+        // get current contacts todo:optimize
+        ParseQuery<ParseObject> getHiddenContacts = ParseQuery.getQuery("Contact");
+        getHiddenContacts
+                .whereEqualTo("owner", ParseUser.getCurrentUser())
+                .whereEqualTo("hidden", true);
+        Set<String> hiddenPhones = new HashSet<>();
+        List<ParseObject> hiddenContacts;
+        try {
+            hiddenContacts = getHiddenContacts.find();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
         }
 
+        for (ParseObject contact : hiddenContacts) {
+            hiddenPhones.add((String) contact.get("phoneNumber"));
+        }
+
+        List<String[]> contacts = new ArrayList<>();
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
 
@@ -163,11 +150,26 @@ public class ContactsFragment extends Fragment implements LoaderManager.LoaderCa
                 String number = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                 String type = (String) ContactsContract.CommonDataKinds.Phone
                         .getTypeLabel(getResources(), cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE)), "");
-                String hidden = !phones.contains(number) ? "true" : "false";
+                String hidden = hiddenPhones.contains(number) ? "true" : "false";
                 contacts.add(new String[] {name, number, type, hidden});
+                if (!hiddenPhones.contains(number)) {
+                    // upload to parse
+                    /*ParseObject contact = new ParseObject("Contact");
+                    contact.put("firstName", name.split(" ")[0]);
+                    try {
+                        contact.put("lastName", name.split(" ")[1]);
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        contact.put("lastName", name.split(" ")[0]);
+                    }
+                    contact.put("fullName", name);
+                    contact.put("hidden", false);
+                    contact.put("phoneNumber", number);
+                    contact.put("owner", ParseUser.getCurrentUser());
+                    contact.put("ownerId", ParseUser.getCurrentUser().getObjectId());
+                    contact.saveInBackground();*/
+                }
             } while (cursor.moveToNext());
         }
-
         return contacts;
     }
 }

@@ -11,6 +11,10 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.parse.GetCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.squareup.picasso.Picasso;
 
@@ -43,54 +47,44 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
     public void onBindViewHolder(final ContactsAdapter.ViewHolder holder, final int position) {
         final String[] user = contacts.get(position);
 
+        Log.d("cl.snatch.snatch", "u: " + user[0] + " ac: " + user[3]);
+
         holder.name.setText(user[0] + " (" + user[2] + ")");
         holder.numbers.setText(user[1]);
         holder.snatched.setChecked(!Boolean.parseBoolean(user[3]));
-        holder.snatched.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        holder.snatched.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            public void onClick(View v) {
+                Boolean isChecked = holder.snatched.isChecked();
                 if (isChecked) {
-                    // send snatch
-                    JSONArray snatched = ParseUser.getCurrentUser().getJSONArray("contactsSnatched");
-
-                    Map<String, Object> newSnatch = new HashMap<>();
-                    newSnatch.put("firstName", user[0].split(" ")[0]);
-                    newSnatch.put("fullName", user[0]);
-                    newSnatch.put("hidden", false);
-                    newSnatch.put("phoneNumber", user[1]);
-
-                    snatched.put(newSnatch);
-                    ParseUser.getCurrentUser().put("contactsSnatched", snatched);
-                    ParseUser.getCurrentUser().saveInBackground();
-                } else {
-                    // remove from snatch
-                    Log.d("cl.snatch.snatch", "removing contact");
-                    JSONArray snatched = ParseUser.getCurrentUser().getJSONArray("contactsSnatched");
-                    JSONArray newSnatches = new JSONArray();
-
-                    for (int i = 0; i < snatched.length(); i++) {
-                        try {
-                            //JSONObject snatch = (JSONObject) snatched.get(i);
-                            Object s = snatched.get(i);
-                            JSONObject snatch;
-                            if (s instanceof JSONObject) snatch = (JSONObject) s;
-                            else /*if (s instanceof Map)*/ snatch = new JSONObject((Map) s);
-
-                            if (!snatch.getString("phoneNumber").equals(user[1])) {
-                                newSnatches.put(snatch);
-                                Log.d("cl.snatch.snatch", snatch.getString("phoneNumber") + "!=" + user[1]);
-                            } else {
-                                Log.d("cl.snatch.snatch", user[0]);
-                            }
-                        } catch (JSONException e) {
-                            Log.d("cl.snatch.snatch", "json error: " + e.getMessage());
-                        }
+                    // send contact
+                    ParseObject contact = new ParseObject("Contact");
+                    contact.put("firstName", user[0].split(" ")[0]);
+                    try {
+                        contact.put("lastName", user[0].split(" ")[1]);
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        contact.put("lastName", user[0].split(" ")[0]);
                     }
-
-                    ParseUser.getCurrentUser().put("contactsSnatched", newSnatches);
-                    ParseUser.getCurrentUser().saveInBackground();
+                    contact.put("fullName", user[0]);
+                    contact.put("hidden", false);
+                    contact.put("phoneNumber", user[1]);
+                    contact.put("owner", ParseUser.getCurrentUser());
+                    contact.put("ownerId", ParseUser.getCurrentUser().getObjectId());
+                    contact.saveInBackground();
+                } else {
+                    // remove contact
+                    Log.d("cl.snatch.snatch", "removing contact");
+                    ParseQuery<ParseObject> hideContact = ParseQuery.getQuery("Contact");
+                    hideContact.whereEqualTo("phoneNumber", user[1]);
+                    hideContact.getFirstInBackground(new GetCallback<ParseObject>() {
+                        @Override
+                        public void done(ParseObject parseObject, ParseException e) {
+                            parseObject.put("hidden", true);
+                            parseObject.saveInBackground();
+                        }
+                    });
                 }
-                String[] newUser = new String[] {user[0], user[1], user[2], String.valueOf(!isChecked)};
+                String[] newUser = new String[]{user[0], user[1], user[2], String.valueOf(!isChecked)};
                 contacts.set(position, newUser);
             }
         });
