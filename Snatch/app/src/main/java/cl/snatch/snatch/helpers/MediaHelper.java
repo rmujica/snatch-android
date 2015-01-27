@@ -11,6 +11,9 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -165,6 +168,19 @@ public class MediaHelper {
         DisplayMetrics metrics = resources.getDisplayMetrics();
         float dp = px / (metrics.densityDpi / 160f);
         return dp;
+    }
+
+    public static String computeHash(String input) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        digest.reset();
+
+        byte[] byteData = digest.digest(input.getBytes("UTF-8"));
+        StringBuilder sb = new StringBuilder();
+
+        for (byte aByteData : byteData) {
+            sb.append(Integer.toString((aByteData & 0xff) + 0x100, 16).substring(1));
+        }
+        return sb.toString();
     }
 
 }

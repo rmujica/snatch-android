@@ -27,4 +27,5 @@ dependencies {
     compile 'com.pkmmte.view:circularimageview:1.1'
     compile 'com.android.support:recyclerview-v7:21.0.+'
     compile 'com.parse.bolts:bolts-android:1.+'
+    compile 'com.jakewharton:butterknife:6.0.0'
 }

@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import cl.snatch.snatch.R;
-import cl.snatch.snatch.adapters.SnatchingAdapter;
+import cl.snatch.snatch.models.SnatchingAdapter;
 
 public class SnatchActivity extends ActionBarActivity {
 

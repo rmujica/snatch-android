@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cl.snatch.snatch.R;
-import cl.snatch.snatch.adapters.FriendsAdapter;
+import cl.snatch.snatch.models.FriendsAdapter;
 
 public class FriendsFragment extends Fragment {
     /**
@@ -50,14 +50,16 @@ public class FriendsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_friends, container, false);
 
+        // recyclerview setup
         list = (RecyclerView) rootView.findViewById(R.id.list);
         list.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(getActivity());
-        adapter = new FriendsAdapter();
+        adapter = new FriendsAdapter(/*list*/);
         list.setAdapter(adapter);
         list.setLayoutManager(layoutManager);
 
         // get friend list
+        // todo: use friends class
         JSONArray jsonFriends = ParseUser.getCurrentUser().getJSONArray("friends");
         final ArrayList<String> friends = new ArrayList<>(jsonFriends.length());
         for (int i = 0; i < jsonFriends.length(); i++) {
@@ -68,6 +70,7 @@ public class FriendsFragment extends Fragment {
             }
         }
 
+        // getting friend data
         ParseQuery<ParseUser> getFriends = ParseUser.getQuery();
         getFriends.whereContainedIn("objectId", friends);
         getFriends.orderByAscending("firstName");

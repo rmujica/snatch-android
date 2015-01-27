@@ -1,11 +1,14 @@
 package cl.snatch.snatch.activities;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -26,24 +29,217 @@ import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.parse.SignUpCallback;
 
-import org.json.JSONArray;
-import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import cl.snatch.snatch.helpers.MediaHelper;
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnClick;
 import cl.snatch.snatch.R;
+import cl.snatch.snatch.helpers.MediaHelper;
+import cl.snatch.snatch.models.ContactsLoader;
 
 
-public class LoginActivity extends ActionBarActivity {
+public class LoginActivity extends ActionBarActivity implements ContactsLoader.LoadFinishedCallback {
 
     private static final int ACTION_REQUEST_GALLERY = 0x1;
     private static final int ACTION_REQUEST_CAMERA = 0x2;
-    private ImageView avatar;
+    private static final String salt = "f6gjdUIjehc654bs7dng9f7behY5dsv4sv6GnFCVjgu7yjhgr8sd65fd8se9GFb8";
+    private static final int CONTACTS_LOADER_ID = 1;
     private Uri avatarUri;
     private Bitmap avatarBitmap = null;
+
+    @InjectView(R.id.avatar) ImageView avatar;
+    @InjectView(R.id.register) Button register;
+    @InjectView(R.id.verify) Button verify;
+    private boolean uploadFinished = false;
+    private boolean isVerified = false;
+
+    @OnClick(R.id.avatar)
+    public void setAvatar() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
+        builder.setTitle(R.string.choose_image_origin);
+        builder.setItems(new CharSequence[]{getString(R.string.gallery), getString(R.string.camera)},
+                new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                // GET IMAGE FROM THE GALLERY
+                                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                                intent.setType("image/*");
+                                Intent chooser = Intent.createChooser(intent, getString(R.string.choose_a_picture));
+                                startActivityForResult(chooser, ACTION_REQUEST_GALLERY);
+                                break;
+
+                            case 1:
+                            default:
+                                Intent getCameraImage = new Intent("android.media.action.IMAGE_CAPTURE");
+                                avatarUri = MediaHelper.getOutputMediaFileUri(MediaHelper.MEDIA_TYPE_IMAGE);
+                                getCameraImage.putExtra(MediaStore.EXTRA_OUTPUT, avatarUri);
+                                startActivityForResult(getCameraImage, ACTION_REQUEST_CAMERA);
+                                break;
+                        }
+                    }
+                });
+
+        builder.show();
+    }
+
+    @OnClick(R.id.register)
+    public void doRegister(final Button register) {
+        register.setEnabled(false);
+        // send data to parse
+        final ParseUser myUser = new ParseUser();
+        myUser.setUsername(((TextView) findViewById(R.id.phone)).getText().toString());
+        try {
+            myUser.setPassword(MediaHelper.computeHash(salt+((TextView) findViewById(R.id.phone)).getText().toString()));
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        myUser.put("firstName", ((TextView) findViewById(R.id.firstName)).getText().toString());
+        myUser.put("lastName", ((TextView) findViewById(R.id.lastName)).getText().toString());
+        myUser.put("fullName", ((TextView) findViewById(R.id.firstName)).getText().toString() + " " + ((TextView) findViewById(R.id.lastName)).getText().toString());
+        myUser.put("phoneNumber", ((TextView) findViewById(R.id.phone)).getText().toString());
+        myUser.put("reach", 0);
+        myUser.put("friends", new ArrayList<JSONObject>());
+        myUser.put("verified", false);
+
+        // save bitmap as byte
+        if (avatarBitmap != null) {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            avatarBitmap.compress(Bitmap.CompressFormat.JPEG, 75, stream);
+            byte[] bitmapByte = stream.toByteArray();
+            final ParseFile avatar = new ParseFile(((TextView) findViewById(R.id.phone)).getText().toString().substring(1)+".jpg", bitmapByte);
+            avatar.saveInBackground(new SaveCallback() {
+                @Override
+                public void done(ParseException e) {
+                    if (e == null) {
+                        myUser.put("profilePicture", avatar);
+                        myUser.signUpInBackground(new SignUpCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                // go to login
+                                if (e == null) {
+                                    stepTwo();
+
+                                    // upload contacts
+                                    getSupportLoaderManager().initLoader(CONTACTS_LOADER_ID,
+                                            null,
+                                            new ContactsLoader(LoginActivity.this));
+
+                                    Map<String, Object> params = new HashMap<>();
+                                    params.put("phoneNumber", myUser.getString("phoneNumber"));
+                                    ParseCloud.callFunctionInBackground("sendVerificationCode", params, new FunctionCallback<Object>() {
+                                        @Override
+                                        public void done(Object o, ParseException e) {
+                                            if (e != null)
+                                                Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
+                                            else Log.d("cl.snatch.snatch", "noerr: " + o.toString());
+                                        }
+                                    });
+                                } else {
+                                    Log.d("cl.snatch.snatch", "pp: " + e.getMessage());
+                                }
+                            }
+                        });
+                    } else {
+                        Log.d("cl.snatch.snatch", "pu: " + e.getMessage());
+                    }
+                }
+            });
+
+        } else {
+            myUser.signUpInBackground(new SignUpCallback() {
+                @Override
+                public void done(ParseException e) {
+                    if (e == null) {
+                        stepTwo();
+
+                        // upload contacts
+                        getSupportLoaderManager().initLoader(CONTACTS_LOADER_ID,
+                                null,
+                                new ContactsLoader(LoginActivity.this));
+
+                        Map<String, Object> params = new HashMap<>();
+                        params.put("phoneNumber", myUser.getString("phoneNumber"));
+
+                        ParseCloud.callFunctionInBackground("sendVerificationCode", params,  new FunctionCallback<Object>() {
+                            @Override
+                            public void done(Object o, ParseException e) {
+                                if (e != null)
+                                    Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
+                                else Log.d("cl.snatch.snatch", "noerr: " + o.toString());
+                            }
+                        });
+                    } else {
+                        Log.d("cl.snatch.snatch", "np: " + e.getMessage());
+                    }
+                }
+            });
+            register.setEnabled(true);
+        }
+    }
+
+    private void stepTwo() {
+        verify.setVisibility(View.VISIBLE);
+        findViewById(R.id.pb).setVisibility(View.VISIBLE);
+        findViewById(R.id.contacts).setVisibility(View.VISIBLE);
+        findViewById(R.id.firstName).setVisibility(View.INVISIBLE);
+        findViewById(R.id.lastName).setVisibility(View.INVISIBLE);
+        findViewById(R.id.phone).setVisibility(View.INVISIBLE);
+        findViewById(R.id.code).setVisibility(View.VISIBLE);
+        findViewById(R.id.sms_txt).setVisibility(View.INVISIBLE);
+        findViewById(R.id.avatar).setVisibility(View.INVISIBLE);
+        register.setVisibility(View.INVISIBLE);
+    }
+
+    @OnClick(R.id.verify)
+    public void doVerify(final Button verify) {
+        verify.setEnabled(false);
+        ParseUser.getCurrentUser().fetchInBackground(new GetCallback<ParseUser>() {
+            @Override
+            public void done(ParseUser user, ParseException e) {
+                if (e == null) {
+                    if (user.getNumber("phoneVerificationCode").equals(Integer.parseInt(((TextView) findViewById(R.id.code)).getText().toString()))) {
+                        // todo: wait until contacts upload finish
+                        ParseUser u = ParseUser.getCurrentUser();
+                        u.put("verified", true);
+                        u.saveInBackground(new SaveCallback() {
+                            @Override
+                            public void done(ParseException e) {
+                                if (e == null) {
+                                    isVerified = true;
+
+                                    if (uploadFinished) {
+                                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                        startActivity(intent); // for result??
+                                        finish();
+                                    } else {
+                                        verify.setText(getString(R.string.still_uploading));
+                                    }
+                                } else {
+                                    Log.d("cl.snatch.snatch", "err: " + e.getMessage());
+                                }
+                            }
+                        });
+                    } else {
+                        // todo: tell user code doesn't match
+                        Log.d("cl.snatch.snatch", "neq: " + String.valueOf(user.getNumber("phoneVerificationCode")) + " " + ((TextView) findViewById(R.id.code)).getText().toString());
+                    }
+                } else {
+                    Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
+                }
+            }
+        });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,191 +253,7 @@ public class LoginActivity extends ActionBarActivity {
         }
 
         setContentView(R.layout.activity_login);
-
-        avatar = (ImageView) findViewById(R.id.avatar);
-        avatar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
-                builder.setTitle(R.string.choose_image_origin);
-                builder.setItems(new CharSequence[]{getString(R.string.gallery), getString(R.string.camera)},
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                switch (which) {
-                                    case 0:
-
-                                        // GET IMAGE FROM THE GALLERY
-                                        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                                        intent.setType("image/*");
-
-                                        Intent chooser = Intent.createChooser(intent, getString(R.string.choose_a_picture));
-                                        startActivityForResult(chooser, ACTION_REQUEST_GALLERY);
-
-                                        break;
-
-                                    case 1:
-                                        Intent getCameraImage = new Intent("android.media.action.IMAGE_CAPTURE");
-
-                                        avatarUri = MediaHelper.getOutputMediaFileUri(MediaHelper.MEDIA_TYPE_IMAGE);
-                                        getCameraImage.putExtra(MediaStore.EXTRA_OUTPUT, avatarUri);
-
-                                        startActivityForResult(getCameraImage, ACTION_REQUEST_CAMERA);
-
-                                        break;
-
-                                    default:
-                                        break;
-                                }
-                            }
-                        });
-
-                builder.show();
-            }
-        });
-
-        final Button register = (Button) findViewById(R.id.register);
-        final Button verify = (Button) findViewById(R.id.verify);
-        verify.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                verify.setEnabled(false);
-                ParseUser.getCurrentUser().fetchInBackground(new GetCallback<ParseUser>() {
-                    @Override
-                    public void done(ParseUser user, ParseException e) {
-                        if (e == null) {
-                            if (user.getNumber("phoneVerificationCode").equals(Integer.parseInt(((TextView) findViewById(R.id.code)).getText().toString()))) {
-                                ParseUser u = ParseUser.getCurrentUser();
-                                u.put("verified", true);
-                                u.saveInBackground(new SaveCallback() {
-                                    @Override
-                                    public void done(ParseException e) {
-                                        if (e == null) {
-                                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                            startActivity(intent); // for result??
-                                            finish();
-                                        } else {
-                                            Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
-                                        }
-                                    }
-                                });
-                            } else {
-                                Log.d("cl.snatch.snatch", "neq: " + String.valueOf(user.getNumber("phoneVerificationCode")) + " " + ((TextView) findViewById(R.id.code)).getText().toString());
-                            }
-                        } else {
-                            Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
-                        }
-                    }
-                });
-            }
-        });
-        register.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                register.setEnabled(false);
-                // send data to parse
-                final ParseUser myUser = new ParseUser();
-                myUser.setUsername(((TextView) findViewById(R.id.phone)).getText().toString());
-                myUser.setPassword("asdf");
-                myUser.put("firstName", ((TextView) findViewById(R.id.firstName)).getText().toString());
-                myUser.put("lastName", ((TextView) findViewById(R.id.lastName)).getText().toString());
-                myUser.put("fullName", ((TextView) findViewById(R.id.firstName)).getText().toString() + " " + ((TextView) findViewById(R.id.lastName)).getText().toString());
-                myUser.put("phoneNumber", ((TextView) findViewById(R.id.phone)).getText().toString());
-                myUser.put("reach", 0);
-                myUser.put("verified", false);
-                try {
-                    myUser.put("friends", new JSONArray("[\"FL8A99SeGR\",\"1sMQiLxN4I\", \"ljIIcIGZUL\"]"));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                // save bitmap as byte
-                if (avatarBitmap != null) {
-                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                    avatarBitmap.compress(Bitmap.CompressFormat.JPEG, 75, stream);
-                    byte[] bitmapByte = stream.toByteArray();
-                    final ParseFile avatar = new ParseFile(((TextView) findViewById(R.id.phone)).getText().toString().substring(1)+".jpg", bitmapByte);
-                    avatar.saveInBackground(new SaveCallback() {
-                        @Override
-                        public void done(ParseException e) {
-                            if (e == null) {
-                                myUser.put("profilePicture", avatar);
-                                myUser.signUpInBackground(new SignUpCallback() {
-                                    @Override
-                                    public void done(ParseException e) {
-                                        // go to login
-                                        if (e == null) {
-                                            verify.setVisibility(View.VISIBLE);
-                                            findViewById(R.id.firstName).setVisibility(View.INVISIBLE);
-                                            findViewById(R.id.lastName).setVisibility(View.INVISIBLE);
-                                            findViewById(R.id.phone).setVisibility(View.INVISIBLE);
-                                            findViewById(R.id.code).setVisibility(View.VISIBLE);
-                                            findViewById(R.id.sms_txt).setVisibility(View.INVISIBLE);
-                                            findViewById(R.id.avatar).setVisibility(View.INVISIBLE);
-                                            register.setVisibility(View.INVISIBLE);
-
-                                            Map<String, Object> params = new HashMap<>();
-                                            params.put("phoneNumber", myUser.getString("phoneNumber"));
-                                            ParseCloud.callFunctionInBackground("sendVerificationCode", params, new FunctionCallback<Object>() {
-                                                @Override
-                                                public void done(Object o, ParseException e) {
-                                                    if (e != null)
-                                                    Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
-                                                    else Log.d("cl.snatch.snatch", "noerr: " + o.toString());
-                                                }
-                                            });
-                                            /*Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                            startActivity(intent); // for result??
-                                            finish();*/
-                                        } else {
-                                            Log.d("cl.snatch.snatch", "pp: " + e.getMessage());
-                                        }
-                                    }
-                                });
-                            } else {
-                                Log.d("cl.snatch.snatch", "pu: " + e.getMessage());
-                            }
-                        }
-                    });
-
-                } else {
-                    myUser.signUpInBackground(new SignUpCallback() {
-                        @Override
-                        public void done(ParseException e) {
-                            if (e == null) {
-                                verify.setVisibility(View.VISIBLE);
-                                findViewById(R.id.firstName).setVisibility(View.INVISIBLE);
-                                findViewById(R.id.lastName).setVisibility(View.INVISIBLE);
-                                findViewById(R.id.phone).setVisibility(View.INVISIBLE);
-                                findViewById(R.id.code).setVisibility(View.VISIBLE);
-                                findViewById(R.id.sms_txt).setVisibility(View.INVISIBLE);
-                                findViewById(R.id.avatar).setVisibility(View.INVISIBLE);
-                                register.setVisibility(View.INVISIBLE);
-
-                                Map<String, Object> params = new HashMap<>();
-                                params.put("phoneNumber", myUser.getString("phoneNumber"));
-                                ParseCloud.callFunctionInBackground("sendVerificationCode", params,  new FunctionCallback<Object>() {
-                                    @Override
-                                    public void done(Object o, ParseException e) {
-                                        if (e != null)
-                                            Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
-                                        else Log.d("cl.snatch.snatch", "noerr: " + o.toString());
-                                    }
-                                });
-                                /*Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                startActivity(intent); // for result??
-                                finish();*/
-                            } else {
-                                Log.d("cl.snatch.snatch", "np: " + e.getMessage());
-                            }
-                        }
-                    });
-                    register.setEnabled(true);
-                }
-            }
-        });
-
+        ButterKnife.inject(this);
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -284,5 +296,45 @@ public class LoginActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onLoadFinished(Cursor cursor) {
+        if (cursor.getCount() > 0) {
+            cursor.moveToFirst();
+
+            do {
+                String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                String number = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+
+                // upload to parse
+                ParseObject contact = new ParseObject("Contact");
+                contact.put("firstName", name.split(" ")[0]);
+                try {
+                    contact.put("lastName", name.split(" ")[1]);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    contact.put("lastName", name.split(" ")[0]);
+                }
+                contact.put("fullName", name);
+                contact.put("hidden", false);
+                contact.put("phoneNumber", number);
+                contact.put("owner", ParseUser.getCurrentUser());
+                contact.put("ownerId", ParseUser.getCurrentUser().getObjectId());
+                contact.saveInBackground();
+            } while (cursor.moveToNext());
+        }
+
+        uploadFinished = true;
+
+        if (isVerified) {
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent); // for result??
+            finish();
+        }
+    }
+
+    @Override
+    public Context getContext() {
+        return this;
     }
 }

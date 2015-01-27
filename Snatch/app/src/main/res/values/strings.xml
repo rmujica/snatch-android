@@ -28,5 +28,9 @@
     <string name="verification_code">Verification code</string>
     <string name="reach">Reach</string>
     <string name="search_query">Search for contacts...</string>
+    <string name="action_add_friend">Add new friend</string>
+    <string name="title_activity_add_friend">AddFriendActivity</string>
+    <string name="uploading_contacts">The verification SMS should arrive shortly. In the meanwhile, we are uploading your current phonebook to Jumpster.</string>
+    <string name="still_uploading">Still importing contacts...</string>
 
 </resources>

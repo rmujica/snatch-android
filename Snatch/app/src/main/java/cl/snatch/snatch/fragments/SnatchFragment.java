@@ -1,15 +1,9 @@
 package cl.snatch.snatch.fragments;
 
 import android.content.ContentProviderOperation;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.provider.ContactsContract.Contacts;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -36,8 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import cl.snatch.snatch.R;
-import cl.snatch.snatch.adapters.ContactsAdapter;
-import cl.snatch.snatch.adapters.SnatchingAdapter;
+import cl.snatch.snatch.models.SnatchingAdapter;
 
 /**
  * A simple {@link android.support.v4.app.Fragment} subclass.
@@ -92,9 +85,14 @@ public class SnatchFragment extends Fragment {
                 ParseQuery<ParseObject> searchFirstNameU = ParseQuery.getQuery("Contact");
                 searchFirstNameU.whereStartsWith("firstName", s.toString().toUpperCase());
                 ParseQuery<ParseObject> searchFirstNameF = ParseQuery.getQuery("Contact");
-                searchFirstNameF.whereStartsWith("firstName", s.toString().substring(0, 1).toUpperCase() + s.toString().substring(1).toLowerCase());
                 ParseQuery<ParseObject> searchLastNameF = ParseQuery.getQuery("Contact");
-                searchLastNameF.whereStartsWith("lastName", s.toString().substring(0, 1).toUpperCase() + s.toString().substring(1).toLowerCase());
+                try {
+                    searchFirstNameF.whereStartsWith("firstName", s.toString().substring(0, 1).toUpperCase() + s.toString().substring(1).toLowerCase());
+                    searchLastNameF.whereStartsWith("lastName", s.toString().substring(0, 1).toUpperCase() + s.toString().substring(1).toLowerCase());
+                } catch (StringIndexOutOfBoundsException e) {
+                    searchFirstNameF.whereStartsWith("firstName", s.toString());
+                    searchLastNameF.whereStartsWith("lastName", s.toString());
+                }
                 ParseQuery<ParseObject> searchLastNameL = ParseQuery.getQuery("Contact");
                 searchLastNameL.whereStartsWith("lastName", s.toString().toLowerCase());
                 ParseQuery<ParseObject> searchLastNameU = ParseQuery.getQuery("Contact");

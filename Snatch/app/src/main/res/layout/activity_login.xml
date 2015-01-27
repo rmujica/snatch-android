@@ -69,9 +69,28 @@
             android:layout_alignRight="@+id/lastName"
             android:layout_alignEnd="@+id/lastName" />
 
+        <TextView
+            android:layout_alignLeft="@+id/code"
+            android:layout_alignStart="@+id/code"
+            android:text="@string/uploading_contacts"
+            android:visibility="invisible"
+            android:id="@+id/contacts"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:visibility="invisible"
+            android:indeterminate="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/pb"
+            android:layout_centerInParent="true"
+            android:layout_above="@id/contacts"/>
+
         <EditText android:id="@+id/code"
             android:layout_marginTop="8dp"
-            android:layout_below="@+id/avatar"
+            android:layout_below="@+id/contacts"
             android:hint="@string/verification_code"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

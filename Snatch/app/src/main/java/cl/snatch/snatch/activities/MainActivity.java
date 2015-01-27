@@ -1,24 +1,17 @@
 package cl.snatch.snatch.activities;
 
 import android.content.Intent;
-import android.provider.ContactsContract;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-
-import com.parse.ParseUser;
 
 import cl.snatch.snatch.R;
-import cl.snatch.snatch.adapters.SectionsPagerAdapter;
+import cl.snatch.snatch.models.SectionsPagerAdapter;
 
 
 public class MainActivity extends ActionBarActivity implements ActionBar.TabListener {
@@ -96,6 +89,9 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        } else if (id == R.id.action_add_friend) {
+            Intent intent = new Intent(this, AddFriendActivity.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);
