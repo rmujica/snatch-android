@@ -19,12 +19,12 @@
             android:layout_marginLeft="6dp"
             android:id="@+id/name"/>
 
-        <TextView
+        <!--<TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:layout_marginLeft="6dp"
-            android:id="@+id/numbers" />
+            android:id="@+id/numbers" />-->
 
     </LinearLayout>
 

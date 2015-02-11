@@ -38,7 +38,7 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
         final ParseObject user = contacts.get(position);
 
         holder.name.setText(user.getString("fullName"));
-        holder.numbers.setText(user.getString("phoneNumber"));
+        //holder.numbers.setText(user.getString("phoneNumber"));
         holder.snatched.setChecked(!user.getBoolean("hidden"));
         holder.snatched.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,14 +70,14 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView name;
         public Context context;
-        public TextView numbers;
+        //public TextView numbers;
         public Switch snatched;
 
         public ViewHolder(View itemView, Context context) {
             super(itemView);
             this.context = context;
             name = (TextView) itemView.findViewById(R.id.name);
-            numbers = (TextView) itemView.findViewById(R.id.numbers);
+            //numbers = (TextView) itemView.findViewById(R.id.numbers);
             snatched = (Switch) itemView.findViewById(R.id.snatched);
         }
     }
