@@ -1,6 +1,7 @@
 package cl.snatch.snatch.models;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -38,6 +39,11 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
         final ParseObject user = contacts.get(position);
 
         holder.name.setText(user.getString("fullName"));
+        if (holder.snatched.isChecked()) {
+            holder.name.setTextColor(Color.BLACK);
+        } else {
+            holder.name.setTextColor(Color.LTGRAY);
+        }
         //holder.numbers.setText(user.getString("phoneNumber"));
         holder.snatched.setChecked(!user.getBoolean("hidden"));
         holder.snatched.setOnClickListener(new View.OnClickListener() {
