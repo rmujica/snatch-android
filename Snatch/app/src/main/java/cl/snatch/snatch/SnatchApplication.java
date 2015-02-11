@@ -10,7 +10,7 @@ public class SnatchApplication extends Application {
     public void onCreate() {
         super.onCreate();
         // Enable Local Datastore.
-        Parse.enableLocalDatastore(this);
+        //Parse.enableLocalDatastore(this);
 
         Parse.initialize(this, "QS802Iea2y3vcdzbzBMu7DA69E5ypNvDBv5htvgr", "V8ds1CarINcpDBrVNKiHgo7qrjth9sUx7GhwfdPK");
     }

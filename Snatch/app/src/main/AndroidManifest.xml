@@ -43,6 +43,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cl.snatch.snatch.activities.MainActivity" />
         </activity>
+        <activity
+            android:name=".activities.FriendRequestsActivity"
+            android:label="@string/title_activity_friend_requests"
+            android:parentActivityName=".activities.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="cl.snatch.snatch.activities.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

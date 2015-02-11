@@ -11,7 +11,9 @@ import android.view.ViewGroup;
 
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
+import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
@@ -60,27 +62,35 @@ public class FriendsFragment extends Fragment {
 
         // get friend list
         // todo: use friends class
-        JSONArray jsonFriends = ParseUser.getCurrentUser().getJSONArray("friends");
-        final ArrayList<String> friends = new ArrayList<>(jsonFriends.length());
-        for (int i = 0; i < jsonFriends.length(); i++) {
-            try {
-                friends.add(jsonFriends.getString(i));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // getting friend data
-        ParseQuery<ParseUser> getFriends = ParseUser.getQuery();
-        getFriends.whereContainedIn("objectId", friends);
-        getFriends.orderByAscending("firstName");
-        getFriends.addAscendingOrder("lastName");
-        getFriends.fromLocalDatastore();
-        getFriends.findInBackground(new FindCallback<ParseUser>() {
+        // todo: pin
+        Log.d("cl.snatch.snatch", "current friends: " + String.valueOf(ParseUser.getCurrentUser().getJSONArray("friends")));
+        ParseUser.getCurrentUser().fetchInBackground(new GetCallback<ParseObject>() {
             @Override
-            public void done(final List<ParseUser> parseUsers, ParseException e) {
-                if (e == null) {
-                    if (parseUsers.size() == 0) {
+            public void done(ParseObject parseObject, ParseException e) {
+                JSONArray jsonFriends = parseObject.getJSONArray("friends");
+                Log.d("cl.snatch.snatch", "oid: " +parseObject.getObjectId() + " " + parseObject.getUpdatedAt().toString());
+
+                Log.d("cl.snatch.snatch", "friends l: " + String.valueOf(jsonFriends.length()));
+                final ArrayList<String> friends = new ArrayList<>(jsonFriends.length());
+                for (int i = 0; i < jsonFriends.length(); i++) {
+                    try {
+                        Log.d("cl.snatch.snatch", "friend: " + jsonFriends.getString(i));
+                        friends.add(jsonFriends.getString(i));
+                    } catch (JSONException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
+                // getting friend data
+                ParseQuery<ParseUser> getFriends = ParseUser.getQuery();
+                getFriends.whereContainedIn("objectId", friends);
+                getFriends.orderByAscending("firstName");
+                getFriends.addAscendingOrder("lastName");
+                getFriends.findInBackground(new FindCallback<ParseUser>() {
+                    @Override
+                    public void done(final List<ParseUser> parseUsers, ParseException e) {
+                        if (e == null) {
+                    /*if (parseUsers.size() == 0) {
                         // update local datastore
                         ParseQuery<ParseUser> findUsers = ParseUser.getQuery();
                         findUsers.whereContainedIn("objectId", friends);
@@ -102,14 +112,17 @@ public class FriendsFragment extends Fragment {
                                 }
                             }
                         });
+                    }*/
+                            Log.d("cl.snatch.snatch", "friends: " + parseUsers.toString());
+                            adapter.updateFriends(parseUsers);
+                        } else {
+                            Log.d("cl.snatch.snatch", "error: " + e.getMessage());
+                        }
                     }
-                    Log.d("cl.snatch.snatch", "friends: " + parseUsers.toString());
-                    adapter.updateFriends(parseUsers);
-                } else {
-                    Log.d("cl.snatch.snatch", "error: " + e.getMessage());
-                }
+                });
             }
         });
+
 
         return rootView;
     }
