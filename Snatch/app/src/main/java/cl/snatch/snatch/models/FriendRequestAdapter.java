@@ -37,6 +37,7 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
     public void onBindViewHolder(final FriendRequestAdapter.ViewHolder holder, int position) {
         final ParseObject parseUser = friends.get(position);
         holder.name.setText(parseUser.getString("fullName"));
+        holder.number.setText(parseUser.getString("phoneNumber"));
         holder.accept.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -96,6 +97,7 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView name;
+        public TextView number;
         public Context context;
         public View container;
         public Button accept;
@@ -107,6 +109,7 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
             name = (TextView) itemView.findViewById(R.id.name);
             accept = (Button) itemView.findViewById(R.id.accept);
             reject = (Button) itemView.findViewById(R.id.reject);
+            number = (TextView) itemView.findViewById(R.id.number);
         }
     }
 }
