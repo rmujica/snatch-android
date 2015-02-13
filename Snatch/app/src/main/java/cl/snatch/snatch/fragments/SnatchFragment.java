@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import cl.snatch.snatch.R;
+import cl.snatch.snatch.models.SnatchResultAdapter;
 import cl.snatch.snatch.models.SnatchingAdapter;
 
 /**
@@ -38,7 +39,7 @@ import cl.snatch.snatch.models.SnatchingAdapter;
 public class SnatchFragment extends Fragment {
 
     RecyclerView list;
-    SnatchingAdapter adapter;
+    SnatchResultAdapter adapter;
     RecyclerView.LayoutManager layoutManager;
 
     public static SnatchFragment newInstance() {
@@ -52,7 +53,7 @@ public class SnatchFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        adapter = new SnatchingAdapter();
+        adapter = new SnatchResultAdapter();
 
         // Inflate the layout for this fragment if needed
         View rootView = inflater.inflate(R.layout.fragment_snatch, container, false);
@@ -124,52 +125,7 @@ public class SnatchFragment extends Fragment {
             }
         });
 
-        Button snatch = (Button) rootView.findViewById(R.id.snatch);
-        snatch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Set<ParseObject> checked = adapter.getChecked();
-                for (ParseObject user : checked) addUserToPhonebook(user);
-                Toast.makeText(getActivity(), getResources().getString(R.string.contacts_snatched), Toast.LENGTH_SHORT).show();
-            }
-        });
-
         return rootView;
     }
 
-    private void addUserToPhonebook(ParseObject user) {
-        // create new contact using object
-        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
-        ops.add(ContentProviderOperation
-                .newInsert(ContactsContract.RawContacts.CONTENT_URI)
-                .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null)
-                .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null)
-                .build());
-
-        ops.add(ContentProviderOperation
-                .newInsert(ContactsContract.Data.CONTENT_URI)
-                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-                .withValue(
-                        ContactsContract.Data.MIMETYPE,
-                        ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-                .withValue(
-                        ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME,
-                        user.getString("fullName")).build());
-
-        ops.add(ContentProviderOperation
-                .newInsert(ContactsContract.Data.CONTENT_URI)
-                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-                .withValue(
-                        ContactsContract.Data.MIMETYPE,
-                        ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-                .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER,
-                        user.getString("phoneNumber"))
-                .withValue(ContactsContract.CommonDataKinds.Phone.TYPE,
-                        ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE).build());
-        try {
-            getActivity().getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }
