@@ -3,6 +3,9 @@ package cl.snatch.snatch.models;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Telephony;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,12 +31,15 @@ import cl.snatch.snatch.helpers.RoundCornersTransformation;
 
 public class AddFriendsAdapter extends RecyclerView.Adapter<AddFriendsAdapter.ViewHolder> {
 
+    public static final String SMS_MESSAGE = "Hey! I'm using Jumpster! http://jumpsterapp.com";
     private List<ParseObject> friends = new ArrayList<>(500); //todo: magic number
+    private Context context;
 
     public AddFriendsAdapter() {}
 
     @Override
     public AddFriendsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        context = parent.getContext();
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.detail_add_friend, parent, false);
         return new ViewHolder(v, parent.getContext());
@@ -78,6 +84,29 @@ public class AddFriendsAdapter extends RecyclerView.Adapter<AddFriendsAdapter.Vi
         } else {
             holder.sms.setVisibility(View.VISIBLE);
             holder.befriend.setVisibility(View.GONE);
+            holder.sms.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        String defaultSmsPackageName = Telephony.Sms.getDefaultSmsPackage(context);
+
+                        intent = new Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:" + Uri.encode(parseUser.getString("phoneNumber"))));
+                        intent.putExtra("sms_body", SMS_MESSAGE);
+
+                        if (defaultSmsPackageName != null) {
+                            // Can be null in case that there is no default, then the user would be able to choose any app that supports this intent.
+                            intent.setPackage(defaultSmsPackageName);
+                        }
+                    } else {
+                        intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setType("vnd.android-dir/mms-sms");
+                        intent.putExtra("address", parseUser.getString("phoneNumber"));
+                        intent.putExtra("sms_body", SMS_MESSAGE);
+                    }
+                    context.startActivity(intent);
+                }
+            });
         }
 
         holder.name.setText(parseUser.getString("fullName"));
