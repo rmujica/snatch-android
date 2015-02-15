@@ -126,9 +126,9 @@ public class ContactsAdapter extends BaseAdapter implements SectionIndexer {
         return 0;
     }
 
-    /*public static class ViewHolder  {
+    public static class ViewHolder  {
         public TextView name;
         public Context context;
         public Switch snatched;
-    }*/
+    }
 }

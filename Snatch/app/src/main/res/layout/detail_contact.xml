@@ -3,7 +3,6 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:padding="6dp"
-    android:layout_marginRight="14dp"
     android:layout_height="match_parent">
 
     <LinearLayout
@@ -34,6 +33,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/snatched"
         android:checked="true"
-        android:layout_gravity="center_vertical" />
+        android:layout_gravity="center_vertical"
+        android:layout_marginRight="25dp" />
 
 </LinearLayout>
