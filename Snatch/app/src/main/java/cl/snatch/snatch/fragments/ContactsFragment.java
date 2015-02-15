@@ -2,15 +2,14 @@ package cl.snatch.snatch.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
 import com.parse.FindCallback;
-import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -19,17 +18,14 @@ import com.parse.ParseUser;
 import java.util.List;
 
 import cl.snatch.snatch.R;
-import cl.snatch.snatch.helpers.scroller.vertical.VerticalRecyclerViewFastScroller;
 import cl.snatch.snatch.models.ContactsAdapter;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ContactsFragment extends Fragment {
+public class ContactsFragment extends ListFragment {
 
-    RecyclerView list;
-    ContactsAdapter adapter;
-    RecyclerView.LayoutManager layoutManager;
+    ContactsAdapter adapter = new ContactsAdapter();
 
     public static ContactsFragment newInstance() {
         return new ContactsFragment();
@@ -42,18 +38,11 @@ public class ContactsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        adapter = new ContactsAdapter();
 
         // Inflate the layout for this fragment if needed
         View rootView = inflater.inflate(R.layout.fragment_contacts, container, false);
-        list = (RecyclerView) rootView.findViewById(R.id.list);
-        VerticalRecyclerViewFastScroller fastScroller = (VerticalRecyclerViewFastScroller) rootView.findViewById(R.id.fast_scroller);
-        fastScroller.setRecyclerView(list);
-        list.setHasFixedSize(true);
-        layoutManager = new LinearLayoutManager(getActivity());
+        ListView list = (ListView) rootView.findViewById(android.R.id.list);
         list.setAdapter(adapter);
-        list.setLayoutManager(layoutManager);
-        list.setOnScrollListener(fastScroller.getOnScrollListener());
 
         // get contacts
         ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");

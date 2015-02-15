@@ -3,16 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/list"
+    <ListView
+        android:id="@android:id/list"
         android:scrollbars="vertical"
+        android:scrollbarStyle="outsideOverlay"
+        android:fastScrollEnabled="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
-
-    <cl.snatch.snatch.helpers.scroller.vertical.VerticalRecyclerViewFastScroller
-        android:id="@+id/fast_scroller"
-        android:layout_width="24dp"
-        android:layout_height="match_parent"
-        android:layout_alignParentRight="true" />
 
 </RelativeLayout>
