@@ -19,6 +19,7 @@ import com.parse.ParseUser;
 import java.util.List;
 
 import cl.snatch.snatch.R;
+import cl.snatch.snatch.helpers.scroller.vertical.VerticalRecyclerViewFastScroller;
 import cl.snatch.snatch.models.ContactsAdapter;
 
 /**
@@ -46,10 +47,13 @@ public class ContactsFragment extends Fragment {
         // Inflate the layout for this fragment if needed
         View rootView = inflater.inflate(R.layout.fragment_contacts, container, false);
         list = (RecyclerView) rootView.findViewById(R.id.list);
+        VerticalRecyclerViewFastScroller fastScroller = (VerticalRecyclerViewFastScroller) rootView.findViewById(R.id.fast_scroller);
+        fastScroller.setRecyclerView(list);
         list.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(getActivity());
         list.setAdapter(adapter);
         list.setLayoutManager(layoutManager);
+        list.setOnScrollListener(fastScroller.getOnScrollListener());
 
         // get contacts
         ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
