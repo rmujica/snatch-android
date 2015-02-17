@@ -52,11 +52,11 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
         Locale l = Locale.getDefault();
         switch (position) {
             case 0:
-                return "Amigos".toUpperCase(l);
+                return "Friends".toUpperCase(l);
             case 1:
-                return "Snatch".toUpperCase(l);
+                return "Search".toUpperCase(l);
             case 2:
-                return "Contactos".toUpperCase(l);
+                return "Contacts".toUpperCase(l);
         }
         return null;
     }

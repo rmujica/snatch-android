@@ -13,7 +13,7 @@
     <string name="snatch">Obtener</string>
     <string name="action_snatch">Obtener</string>
     <string name="action_settings">Configuración</string>
-    <string name="app_name">Friendster</string>
+    <string name="app_name">Jumpster</string>
     <string name="contacts_snatched">Contactos obtenidos!</string>
     <string name="sms_verification">Para verificar tu cuenta, se enviará un SMS con un código que deberás ingresar en la sigiente pantalla.</string>
     <string name="send_sms">Enviar SMS</string>
