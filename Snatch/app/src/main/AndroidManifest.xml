@@ -52,6 +52,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cl.snatch.snatch.activities.MainActivity" />
         </activity>
+        <meta-data
+            android:name="com.crashlytics.ApiKey"
+            android:value="b8a84f73a2a762326445af77a4115060bdc24595" />
     </application>
 
 </manifest>

@@ -15,6 +15,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parse.ParseException;
 import com.parse.ParseObject;
 
 import java.util.ArrayList;
@@ -42,26 +43,31 @@ public class SnatchResultAdapter extends RecyclerView.Adapter<SnatchResultAdapte
 
     @Override
     public void onBindViewHolder(final SnatchResultAdapter.ViewHolder holder, final int position) {
-        final ParseObject user = contacts.get(position);
-        final ParseObject owner = user.getParseUser("owner");
+        final ParseObject user;
+        try {
+            user = contacts.get(position).fetchIfNeeded();
+            final ParseObject owner = user.getParseUser("owner").fetchIfNeeded();
 
-        holder.name.setText(user.getString("fullName"));
-        holder.numbers.setText(user.getString("phoneNumber") + " (" + owner.getString("fullName") + ")");
-        holder.snatch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addUserToPhonebook(user);
-                Toast.makeText(context, context.getResources().getString(R.string.contacts_snatched), Toast.LENGTH_SHORT).show();
-            }
-        });
-        holder.call.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_CALL);
-                intent.setData(Uri.parse("tel:" + user.getString("phoneNumber")));
-                context.startActivity(intent);
-            }
-        });
+            holder.name.setText(user.getString("fullName"));
+            holder.numbers.setText(user.getString("phoneNumber") + " (" + owner.getString("fullName") + ")");
+            holder.snatch.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    addUserToPhonebook(user);
+                    Toast.makeText(context, context.getResources().getString(R.string.contacts_snatched), Toast.LENGTH_SHORT).show();
+                }
+            });
+            holder.call.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(Intent.ACTION_CALL);
+                    intent.setData(Uri.parse("tel:" + user.getString("phoneNumber")));
+                    context.startActivity(intent);
+                }
+            });
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

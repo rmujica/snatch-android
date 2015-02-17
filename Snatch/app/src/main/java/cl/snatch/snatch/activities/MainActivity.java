@@ -7,10 +7,12 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import cl.snatch.snatch.R;
+import cl.snatch.snatch.helpers.SlidingTabLayout;
 import cl.snatch.snatch.models.SectionsPagerAdapter;
 
 
@@ -25,6 +27,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     SectionsPagerAdapter mSectionsPagerAdapter;
+    SlidingTabLayout mSlidingTabLayout;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -36,9 +39,33 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.actionbar);
+        toolbar.setTitle(R.string.app_name);
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                int id = item.getItemId();
+
+                //noinspection SimplifiableIfStatement
+                if (id == R.id.action_settings) {
+                    return true;
+                } else if (id == R.id.action_add_friend) {
+                    Intent intent = new Intent(MainActivity.this, AddFriendActivity.class);
+                    startActivity(intent);
+                } else if (id == R.id.action_friend_requests) {
+                    Intent intent = new Intent(MainActivity.this, FriendRequestsActivity.class);
+                    startActivity(intent);
+                }
+
+                return true;
+            }
+        });
+        toolbar.inflateMenu(R.menu.menu_main);
+        //setSupportActionBar(toolbar);
+
         // Set up the action bar. todo: use toolbar
-        final ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        //final ActionBar actionBar = getSupportActionBar();
+        //actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -48,10 +75,13 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        mSlidingTabLayout = (SlidingTabLayout) findViewById(R.id.sliding_tabs);
+        mSlidingTabLayout.setViewPager(mViewPager);
+
         // When swiping between different sections, select the corresponding
         // tab. We can also use ActionBar.Tab#select() to do this if we have
         // a reference to the Tab.
-        mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+        /*mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
                 actionBar.setSelectedNavigationItem(position);
@@ -64,18 +94,19 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             // the adapter. Also specify this Activity object, which implements
             // the TabListener interface, as the callback (listener) for when
             // this tab is selected.
+            mSlidingTabLayout.
             actionBar.addTab(
                     actionBar.newTab()
                             .setText(mSectionsPagerAdapter.getPageTitle(i))
                             .setTabListener(this));
-        }
+        }*/
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        //getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
@@ -84,20 +115,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        } else if (id == R.id.action_add_friend) {
-            Intent intent = new Intent(this, AddFriendActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.action_friend_requests) {
-            Intent intent = new Intent(this, FriendRequestsActivity.class);
-            startActivity(intent);
-        }
-
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
     @Override

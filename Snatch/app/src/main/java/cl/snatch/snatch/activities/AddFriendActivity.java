@@ -7,6 +7,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -40,6 +41,9 @@ public class AddFriendActivity extends ActionBarActivity /*implements ContactsLo
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_friend);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.actionbar);
+        setSupportActionBar(toolbar);
 
         // recyclerview setup
         list = (RecyclerView) findViewById(R.id.list);

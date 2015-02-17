@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -254,6 +255,9 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
 
         setContentView(R.layout.activity_login);
         ButterKnife.inject(this);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.actionbar);
+        setSupportActionBar(toolbar);
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

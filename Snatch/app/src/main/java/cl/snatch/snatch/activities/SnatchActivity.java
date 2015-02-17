@@ -6,6 +6,7 @@ import android.provider.ContactsContract;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -33,6 +34,9 @@ public class SnatchActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_snatch);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.actionbar);
+        setSupportActionBar(toolbar);
 
         // initialize list
         adapter = new SnatchingAdapter();

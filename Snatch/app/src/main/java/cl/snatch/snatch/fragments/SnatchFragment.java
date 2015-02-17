@@ -71,6 +71,10 @@ public class SnatchFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().isEmpty()) {
+                    adapter.replaceContacts(new ArrayList<ParseObject>());
+                    return;
+                }
                 JSONArray jFriends = ParseUser.getCurrentUser().getJSONArray("friends");
                 Set<String> friends = new HashSet<>(jFriends.length());
                 for (int i = 0; i < jFriends.length(); i++) {
