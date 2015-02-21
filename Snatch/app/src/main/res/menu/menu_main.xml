@@ -2,8 +2,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools" tools:context="cl.snatch.snatch.activities.MainActivity">
 
-    <item android:id="@+id/action_add_friend" android:title="@string/action_add_friend" app:showAsAction="ifRoom" android:icon="@drawable/ic_person_add" />
-    <item android:id="@+id/action_friend_requests" android:title="@string/action_friend_requests" android:icon="@drawable/ic_notification" app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_search"
+        android:icon="@android:drawable/ic_menu_search"
+        app:showAsAction="always"
+        app:actionViewClass="android.support.v7.widget.SearchView"
+        android:title="@string/search"/>
+
+    <item android:id="@+id/action_add_friend" android:title="@string/action_add_friend" app:showAsAction="always|collapseActionView" android:icon="@drawable/ic_person_add" />
+    <item android:id="@+id/action_friend_requests" android:title="@string/action_friend_requests" android:icon="@drawable/ic_notifications" app:showAsAction="always|collapseActionView" />
 
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />

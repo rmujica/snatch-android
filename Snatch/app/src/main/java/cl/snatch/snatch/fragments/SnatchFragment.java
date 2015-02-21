@@ -31,7 +31,6 @@ import java.util.Set;
 
 import cl.snatch.snatch.R;
 import cl.snatch.snatch.models.SnatchResultAdapter;
-import cl.snatch.snatch.models.SnatchingAdapter;
 
 /**
  * A simple {@link android.support.v4.app.Fragment} subclass.

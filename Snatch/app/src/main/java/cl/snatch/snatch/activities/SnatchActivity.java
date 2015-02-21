@@ -51,6 +51,8 @@ public class SnatchActivity extends ActionBarActivity {
         ParseQuery<ParseObject> contactsQuery = ParseQuery.getQuery("Contact");
         contactsQuery.setLimit(1000);
         contactsQuery.whereEqualTo("ownerId", userId);
+        contactsQuery.orderByAscending("firstName");
+        contactsQuery.addAscendingOrder("lastName");
         contactsQuery.findInBackground(new FindContacts());
     }
 

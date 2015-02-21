@@ -37,31 +37,22 @@ public class SnatchingAdapter extends RecyclerView.Adapter<SnatchingAdapter.View
     @Override
     public void onBindViewHolder(final SnatchingAdapter.ViewHolder holder, final int position) {
         final ParseObject user = contacts.get(position);
-        final ParseObject owner;
-        try {
-            owner = user.getParseUser("owner").fetchIfNeeded();
-
-
-            holder.container.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    holder.snatched.performClick();
-                }
-            });
-            holder.name.setText(user.getString("fullName"));
-            holder.numbers.setText(user.getString("phoneNumber") + " (" + owner.getString("fullName") + ")");
-            holder.snatched.setChecked(checked.contains(user));
-            holder.snatched.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (holder.snatched.isChecked()) checked.add(user);
-                    else checked.remove(user);
-                    Log.d("cl.snatch.snatch", "ch: " + String.valueOf(holder.snatched.isChecked()) + " cd: " + String.valueOf(checked.contains(user)));
-                }
-            });
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        holder.container.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                holder.snatched.performClick();
+            }
+        });
+        holder.name.setText(user.getString("fullName"));
+        holder.numbers.setText(user.getString("phoneNumber"));
+        holder.snatched.setChecked(checked.contains(user));
+        holder.snatched.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (holder.snatched.isChecked()) checked.add(user);
+                else checked.remove(user);
+            }
+        });
     }
 
     @Override

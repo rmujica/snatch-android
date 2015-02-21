@@ -29,4 +29,6 @@
     <string name="title_activity_add_friend">Agregar nuevo amigo</string>
     <string name="title_activity_friend_requests">Solicitudes de amistad</string>
     <string name="title_activity_snatch">Obtener</string>
+    <string name="empty_friends">You don\'t have friends yet. Why don\'t you add some now?</string>
+    <string name="search">Search</string>
 </resources>

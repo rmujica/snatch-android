@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -61,6 +62,22 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             }
         });
         toolbar.inflateMenu(R.menu.menu_main);
+        MenuItem searchItem = toolbar.getMenu().findItem(R.id.action_search);
+        if (searchItem != null) {
+            SearchView searchView = (SearchView) searchItem.getActionView();
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String s) {
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String s) {
+                    return false;
+                }
+            });
+        }
+
         //setSupportActionBar(toolbar);
 
         // Set up the action bar. todo: use toolbar
@@ -77,6 +94,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
         mSlidingTabLayout = (SlidingTabLayout) findViewById(R.id.sliding_tabs);
         mSlidingTabLayout.setViewPager(mViewPager);
+        mSlidingTabLayout.setSelectedIndicatorColors(getResources().getColor(R.color.highlight));
 
         // When swiping between different sections, select the corresponding
         // tab. We can also use ActionBar.Tab#select() to do this if we have

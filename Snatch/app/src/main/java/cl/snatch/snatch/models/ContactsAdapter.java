@@ -100,10 +100,12 @@ public class ContactsAdapter extends BaseAdapter implements SectionIndexer {
                     // show contact
                     user.put("hidden", false);
                     user.saveInBackground();
+                    holder.name.setTextColor(Color.BLACK);
                 } else {
                     // hide contact
                     user.put("hidden", true);
                     user.saveInBackground();
+                    holder.name.setTextColor(Color.LTGRAY);
                 }
             }
         });

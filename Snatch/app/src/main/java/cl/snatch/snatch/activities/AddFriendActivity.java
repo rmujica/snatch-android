@@ -91,7 +91,9 @@ public class AddFriendActivity extends ActionBarActivity /*implements ContactsLo
                                                 Log.d("cl.snatch.snatch", "user is: " + ParseUser.getCurrentUser().toString() + " id: " + ParseUser.getCurrentUser().getObjectId());
                                                 Log.d("cl.snatch.snatch", "status: " + e.getMessage() + " " + ParseUser.getCurrentUser().getObjectId() + " " + p.getObjectId());
                                             }
-                                            adapter.addFriend(parseObjects.indexOf(p), p);
+                                            if (!p.has("fst") || !p.getString("fst").equals("accepted")) {
+                                                adapter.addFriend(parseObjects.indexOf(p), p);
+                                            }
                                         }
                                     });
                                 } else {

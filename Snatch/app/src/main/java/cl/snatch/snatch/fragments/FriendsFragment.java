@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.crashlytics.android.Crashlytics;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cl.snatch.snatch.R;
+import cl.snatch.snatch.helpers.EmptyRecyclerView;
 import cl.snatch.snatch.models.FriendsAdapter;
 
 public class FriendsFragment extends Fragment {
@@ -32,7 +34,7 @@ public class FriendsFragment extends Fragment {
      * fragment.
      */
     //private static final String ARG_SECTION_NUMBER = "section_number";
-    RecyclerView list;
+    EmptyRecyclerView list;
     FriendsAdapter adapter;
     RecyclerView.LayoutManager layoutManager;
 
@@ -47,79 +49,42 @@ public class FriendsFragment extends Fragment {
     public FriendsFragment() {
     }
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_friends, container, false);
 
         // recyclerview setup
-        list = (RecyclerView) rootView.findViewById(R.id.list);
+        list = (EmptyRecyclerView) rootView.findViewById(R.id.list);
         list.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(getActivity());
         adapter = new FriendsAdapter(/*list*/);
         list.setAdapter(adapter);
         list.setLayoutManager(layoutManager);
+        list.setEmptyView(rootView.findViewById(R.id.empty));
 
         // get friend list
-        // todo: use friends class
-        // todo: pin
-        Log.d("cl.snatch.snatch", "current friends: " + String.valueOf(ParseUser.getCurrentUser().getJSONArray("friends")));
-        ParseUser.getCurrentUser().fetchInBackground(new GetCallback<ParseObject>() {
+        final ArrayList<String> friends =
+                new ArrayList<>(ParseUser.getCurrentUser().getList("friends").size());
+        friends.addAll(ParseUser.getCurrentUser().<String>getList("friends"));
+
+        Log.d("cl.snatch.snatch", "friends: " + ParseUser.getCurrentUser().getList("friends").toString());
+
+        // getting friend data
+        ParseQuery<ParseUser> getFriends = ParseUser.getQuery();
+        getFriends.whereContainedIn("objectId", friends);
+        getFriends.orderByAscending("firstName");
+        getFriends.addAscendingOrder("lastName");
+        getFriends.fromLocalDatastore();
+        getFriends.findInBackground(new FindCallback<ParseUser>() {
             @Override
-            public void done(ParseObject parseObject, ParseException e) {
-                JSONArray jsonFriends = parseObject.getJSONArray("friends");
-                Log.d("cl.snatch.snatch", "oid: " +parseObject.getObjectId() + " " + parseObject.getUpdatedAt().toString());
-
-                Log.d("cl.snatch.snatch", "friends l: " + String.valueOf(jsonFriends.length()));
-                final ArrayList<String> friends = new ArrayList<>(jsonFriends.length());
-                for (int i = 0; i < jsonFriends.length(); i++) {
-                    try {
-                        Log.d("cl.snatch.snatch", "friend: " + jsonFriends.getString(i));
-                        friends.add(jsonFriends.getString(i));
-                    } catch (JSONException ex) {
-                        ex.printStackTrace();
-                    }
+            public void done(final List<ParseUser> parseUsers, ParseException e) {
+                if (e == null) {
+                    adapter.updateFriends(parseUsers);
+                } else {
+                    Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error loading friends: " + e.getMessage());
                 }
-
-                // getting friend data
-                ParseQuery<ParseUser> getFriends = ParseUser.getQuery();
-                getFriends.whereContainedIn("objectId", friends);
-                getFriends.orderByAscending("firstName");
-                getFriends.addAscendingOrder("lastName");
-                getFriends.findInBackground(new FindCallback<ParseUser>() {
-                    @Override
-                    public void done(final List<ParseUser> parseUsers, ParseException e) {
-                        if (e == null) {
-                    /*if (parseUsers.size() == 0) {
-                        // update local datastore
-                        ParseQuery<ParseUser> findUsers = ParseUser.getQuery();
-                        findUsers.whereContainedIn("objectId", friends);
-                        findUsers.orderByAscending("firstName");
-                        findUsers.addAscendingOrder("lastName");
-                        findUsers.findInBackground(new FindCallback<ParseUser>() {
-                            @Override
-                            public void done(final List<ParseUser> newUsers, ParseException e) {
-                                if (e == null) {
-                                    adapter.updateFriends(parseUsers);
-                                    ParseUser.unpinAllInBackground("friends", new DeleteCallback() {
-                                        @Override
-                                        public void done(ParseException e) {
-                                            if (e == null) {
-                                                ParseUser.pinAllInBackground("friends", newUsers);
-                                            }
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                    }*/
-                            Log.d("cl.snatch.snatch", "friends: " + parseUsers.toString());
-                            adapter.updateFriends(parseUsers);
-                        } else {
-                            Log.d("cl.snatch.snatch", "error: " + e.getMessage());
-                        }
-                    }
-                });
             }
         });
 

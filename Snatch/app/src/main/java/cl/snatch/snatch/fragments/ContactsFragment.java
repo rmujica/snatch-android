@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import com.crashlytics.android.Crashlytics;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -49,13 +50,14 @@ public class ContactsFragment extends ListFragment {
         getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
         getContacts.orderByAscending("firstName");
         getContacts.addDescendingOrder("lastName");
+        getContacts.fromLocalDatastore();
         getContacts.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> parseObjects, ParseException e) {
                 if (e == null) {
                     adapter.updateContacts(parseObjects);
                 } else {
-                    Log.d("cl.snatch.snatch", "error loading contacts: " + e.getMessage());
+                    Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error loading contacts: " + e.getMessage());
                 }
             }
         });

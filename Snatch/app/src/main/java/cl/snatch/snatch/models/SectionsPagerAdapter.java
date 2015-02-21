@@ -9,7 +9,6 @@ import java.util.Locale;
 import cl.snatch.snatch.activities.MainActivity;
 import cl.snatch.snatch.fragments.ContactsFragment;
 import cl.snatch.snatch.fragments.FriendsFragment;
-import cl.snatch.snatch.fragments.PlaceholderFragment;
 import cl.snatch.snatch.fragments.SnatchFragment;
 
 /**
@@ -37,7 +36,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
             case 1:
                 return SnatchFragment.newInstance();
             default:
-                return PlaceholderFragment.newInstance(position + 1);
+                return FriendsFragment.newInstance();
         }
     }
 
