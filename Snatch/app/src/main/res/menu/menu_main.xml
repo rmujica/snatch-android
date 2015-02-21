@@ -4,14 +4,15 @@
 
     <item
         android:id="@+id/action_search"
-        android:icon="@android:drawable/ic_menu_search"
-        app:showAsAction="always"
+        android:icon="@drawable/ic_search"
+        app:showAsAction="ifRoom|collapseActionView"
+        android:orderInCategory="100"
         app:actionViewClass="android.support.v7.widget.SearchView"
         android:title="@string/search"/>
 
-    <item android:id="@+id/action_add_friend" android:title="@string/action_add_friend" app:showAsAction="always|collapseActionView" android:icon="@drawable/ic_person_add" />
-    <item android:id="@+id/action_friend_requests" android:title="@string/action_friend_requests" android:icon="@drawable/ic_notifications" app:showAsAction="always|collapseActionView" />
+    <item android:id="@+id/action_add_friend" android:orderInCategory="101" android:title="@string/action_add_friend" app:showAsAction="ifRoom" android:icon="@drawable/ic_person_add" />
+    <item android:id="@+id/action_friend_requests" android:orderInCategory="102" android:title="@string/action_friend_requests" android:icon="@drawable/ic_notifications" app:showAsAction="ifRoom" />
 
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" app:showAsAction="never" />
+        android:orderInCategory="103" app:showAsAction="never" />
 </menu>

@@ -46,6 +46,8 @@ public class ContactsFragment extends ListFragment {
         list.setAdapter(adapter);
 
         // get contacts
+
+        // todo: URGENTE revisar contactos
         ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
         getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
         getContacts.orderByAscending("firstName");

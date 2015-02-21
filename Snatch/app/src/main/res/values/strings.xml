@@ -38,5 +38,6 @@
     <string name="reject">Reject</string>
     <string name="empty_friends">You don\'t have friends yet.\nYou can add using the button above.</string>
     <string name="search">Search</string>
+    <string name="do_login">Already registered?</string>
 
 </resources>

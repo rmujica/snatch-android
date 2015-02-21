@@ -31,4 +31,5 @@
     <string name="title_activity_snatch">Obtener</string>
     <string name="empty_friends">You don\'t have friends yet. Why don\'t you add some now?</string>
     <string name="search">Search</string>
+    <string name="do_login">Already registered?</string>
 </resources>

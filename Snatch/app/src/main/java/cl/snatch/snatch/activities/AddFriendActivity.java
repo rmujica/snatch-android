@@ -62,7 +62,7 @@ public class AddFriendActivity extends ActionBarActivity /*implements ContactsLo
         Log.d("cl.snatch.snatch", "user is: " + ParseUser.getCurrentUser().toString() + " id: " + ParseUser.getCurrentUser().getObjectId());
         getContacts.orderByAscending("firstName");
         getContacts.addAscendingOrder("lastName");
-        // todo: verificar bien condiciones para mostrar contactos
+        // todo: URGENTE verificar bien condiciones para mostrar contactos
         getContacts.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(final List<ParseObject> parseObjects, ParseException e) {

@@ -7,14 +7,33 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseUser;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import cl.snatch.snatch.R;
 import cl.snatch.snatch.helpers.SlidingTabLayout;
 import cl.snatch.snatch.models.SectionsPagerAdapter;
+import cl.snatch.snatch.models.SnatchResultAdapter;
 
 
 public class MainActivity extends ActionBarActivity implements ActionBar.TabListener {
@@ -29,6 +48,10 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
      */
     SectionsPagerAdapter mSectionsPagerAdapter;
     SlidingTabLayout mSlidingTabLayout;
+
+    RecyclerView list;
+    SnatchResultAdapter adapter;
+    RecyclerView.LayoutManager layoutManager;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -62,9 +85,23 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
             }
         });
         toolbar.inflateMenu(R.menu.menu_main);
+        adapter = new SnatchResultAdapter();
+        list = (RecyclerView) findViewById(R.id.list);
+        list.setHasFixedSize(true);
+        layoutManager = new LinearLayoutManager(this);
+        list.setAdapter(adapter);
+        list.setLayoutManager(layoutManager);
         MenuItem searchItem = toolbar.getMenu().findItem(R.id.action_search);
         if (searchItem != null) {
-            SearchView searchView = (SearchView) searchItem.getActionView();
+            final SearchView searchView = (SearchView) searchItem.getActionView();
+            searchView.setQueryHint("Reach: 626");
+            searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+                @Override
+                public boolean onClose() {
+                    list.setVisibility(View.GONE);
+                    return false;
+                }
+            });
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String s) {
@@ -73,16 +110,65 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
                 @Override
                 public boolean onQueryTextChange(String s) {
+                    if (s.isEmpty()) {
+                        adapter.replaceContacts(new ArrayList<ParseObject>());
+                        list.setVisibility(View.GONE);
+                        return false;
+                    }
+                    JSONArray jFriends = ParseUser.getCurrentUser().getJSONArray("friends");
+                    Set<String> friends = new HashSet<>(jFriends.length());
+                    for (int i = 0; i < jFriends.length(); i++) {
+                        try {
+                            friends.add(jFriends.getString(i));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    ParseQuery<ParseObject> searchFirstNameL = ParseQuery.getQuery("Contact");
+                    searchFirstNameL.whereStartsWith("firstName", s.toLowerCase());
+                    ParseQuery<ParseObject> searchFirstNameU = ParseQuery.getQuery("Contact");
+                    searchFirstNameU.whereStartsWith("firstName", s.toUpperCase());
+                    ParseQuery<ParseObject> searchFirstNameF = ParseQuery.getQuery("Contact");
+                    ParseQuery<ParseObject> searchLastNameF = ParseQuery.getQuery("Contact");
+                    try {
+                        searchFirstNameF.whereStartsWith("firstName", s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase());
+                        searchLastNameF.whereStartsWith("lastName", s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase());
+                    } catch (StringIndexOutOfBoundsException e) {
+                        searchFirstNameF.whereStartsWith("firstName", s);
+                        searchLastNameF.whereStartsWith("lastName", s);
+                    }
+                    ParseQuery<ParseObject> searchLastNameL = ParseQuery.getQuery("Contact");
+                    searchLastNameL.whereStartsWith("lastName", s.toLowerCase());
+                    ParseQuery<ParseObject> searchLastNameU = ParseQuery.getQuery("Contact");
+                    searchLastNameU.whereStartsWith("lastName", s.toUpperCase());
+
+                    ArrayList<ParseQuery<ParseObject>> search = new ArrayList<>();
+                    search.add(searchFirstNameL);
+                    search.add(searchFirstNameU);
+                    search.add(searchFirstNameF);
+                    search.add(searchLastNameL);
+                    search.add(searchLastNameU);
+                    search.add(searchLastNameF);
+
+                    ParseQuery<ParseObject> mainSearch = ParseQuery.or(search);
+                    mainSearch.whereContainedIn("ownerId", friends);
+                    mainSearch.findInBackground(new FindCallback<ParseObject>() {
+                        @Override
+                        public void done(List<ParseObject> search, ParseException e) {
+                            if (e == null) {
+                                list.setVisibility(View.VISIBLE);
+                                adapter.replaceContacts(search);
+                                Log.d("cl.snatch.snatch", "result: " + String.valueOf(search.size()));
+                            } else {
+                                Log.d("cl.snatch.snatch", "error: " + e.getMessage());
+                            }
+                        }
+                    });
                     return false;
                 }
             });
         }
-
-        //setSupportActionBar(toolbar);
-
-        // Set up the action bar. todo: use toolbar
-        //final ActionBar actionBar = getSupportActionBar();
-        //actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -95,29 +181,6 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         mSlidingTabLayout = (SlidingTabLayout) findViewById(R.id.sliding_tabs);
         mSlidingTabLayout.setViewPager(mViewPager);
         mSlidingTabLayout.setSelectedIndicatorColors(getResources().getColor(R.color.highlight));
-
-        // When swiping between different sections, select the corresponding
-        // tab. We can also use ActionBar.Tab#select() to do this if we have
-        // a reference to the Tab.
-        /*mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                actionBar.setSelectedNavigationItem(position);
-            }
-        });
-
-        // For each of the sections in the app, add a tab to the action bar.
-        for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
-            // Create a tab with text corresponding to the page title defined by
-            // the adapter. Also specify this Activity object, which implements
-            // the TabListener interface, as the callback (listener) for when
-            // this tab is selected.
-            mSlidingTabLayout.
-            actionBar.addTab(
-                    actionBar.newTab()
-                            .setText(mSectionsPagerAdapter.getPageTitle(i))
-                            .setTabListener(this));
-        }*/
     }
 
 

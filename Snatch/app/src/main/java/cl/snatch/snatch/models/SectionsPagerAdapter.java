@@ -9,7 +9,6 @@ import java.util.Locale;
 import cl.snatch.snatch.activities.MainActivity;
 import cl.snatch.snatch.fragments.ContactsFragment;
 import cl.snatch.snatch.fragments.FriendsFragment;
-import cl.snatch.snatch.fragments.SnatchFragment;
 
 /**
  * A {@link android.support.v4.app.FragmentPagerAdapter} that returns a fragment corresponding to
@@ -31,10 +30,8 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
         switch (position) {
             case 0:
                 return FriendsFragment.newInstance();
-            case 2:
-                return ContactsFragment.newInstance();
             case 1:
-                return SnatchFragment.newInstance();
+                return ContactsFragment.newInstance();
             default:
                 return FriendsFragment.newInstance();
         }
@@ -42,8 +39,8 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        // Show 3 total pages.
-        return 3;
+        // Show 2 total pages.
+        return 2;
     }
 
     @Override
@@ -53,8 +50,6 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
             case 0:
                 return "Friends".toUpperCase(l);
             case 1:
-                return "Search".toUpperCase(l);
-            case 2:
                 return "Contacts".toUpperCase(l);
         }
         return null;

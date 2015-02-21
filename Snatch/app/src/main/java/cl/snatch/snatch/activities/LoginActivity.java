@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.parse.FunctionCallback;
 import com.parse.GetCallback;
+import com.parse.LogInCallback;
 import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseFile;
@@ -92,6 +93,28 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                 });
 
         builder.show();
+    }
+
+    @OnClick(R.id.dologin)
+    public void doLogin(final Button login) {
+        // todo: do this right using sms
+        String username = ((TextView) findViewById(R.id.phone)).getText().toString();
+        String password = "";
+        try {
+            password = MediaHelper.computeHash(salt+((TextView) findViewById(R.id.phone)).getText().toString());
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        ParseUser.logInInBackground(username, password, new LogInCallback() {
+            @Override
+            public void done(ParseUser user, ParseException e) {
+                if (user != null) {
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    startActivity(intent); // for result??
+                    finish();
+                }
+            }
+        });
     }
 
     @OnClick(R.id.register)

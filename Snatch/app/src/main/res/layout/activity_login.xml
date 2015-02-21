@@ -84,6 +84,15 @@
                 android:layout_alignRight="@+id/lastName"
                 android:layout_alignEnd="@+id/lastName" />
 
+            <Button
+                android:layout_marginTop="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/do_login"
+                android:id="@+id/dologin"
+                android:layout_below="@+id/sms_txt"
+                android:layout_toLeftOf="@id/register" />
+
             <TextView
                 android:layout_alignLeft="@+id/code"
                 android:layout_alignStart="@+id/code"
