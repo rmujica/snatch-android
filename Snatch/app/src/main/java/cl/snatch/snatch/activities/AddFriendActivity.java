@@ -30,9 +30,7 @@ import cl.snatch.snatch.models.AddFriendsAdapter;
 import cl.snatch.snatch.models.ContactsLoader;
 import cl.snatch.snatch.models.FriendsAdapter;
 
-public class AddFriendActivity extends ActionBarActivity /*implements ContactsLoader.LoadFinishedCallback*/ {
-
-    private static final int CONTACTS_LOADER_ID = 1;
+public class AddFriendActivity extends ActionBarActivity {
     RecyclerView list;
     AddFriendsAdapter adapter;
     RecyclerView.LayoutManager layoutManager;
@@ -53,58 +51,32 @@ public class AddFriendActivity extends ActionBarActivity /*implements ContactsLo
         list.setAdapter(adapter);
         list.setLayoutManager(layoutManager);
 
-        /*getSupportLoaderManager().initLoader(CONTACTS_LOADER_ID,
-                null,
-                new ContactsLoader(this));*/
-
-        ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
+        final ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
         getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
-        Log.d("cl.snatch.snatch", "user is: " + ParseUser.getCurrentUser().toString() + " id: " + ParseUser.getCurrentUser().getObjectId());
-        getContacts.orderByAscending("firstName");
-        getContacts.addAscendingOrder("lastName");
-        // todo: URGENTE verificar bien condiciones para mostrar contactos
-        getContacts.findInBackground(new FindCallback<ParseObject>() {
+        getContacts.setLimit(1000);
+        ParseQuery<ParseUser> isInSnatch = ParseUser.getQuery();
+        isInSnatch.whereMatchesKeyInQuery("phoneNumber", "phoneNumber", getContacts);
+        isInSnatch.whereNotContainedIn("objectId", ParseUser.getCurrentUser().getList("friends"));
+        isInSnatch.orderByAscending("firstName");
+        isInSnatch.addAscendingOrder("lastName");
+        isInSnatch.setLimit(1000);
+        isInSnatch.findInBackground(new FindCallback<ParseUser>() {
             @Override
-            public void done(final List<ParseObject> parseObjects, ParseException e) {
+            public void done(List<ParseUser> parseUsers, ParseException e) {
                 if (e == null) {
-                    for (final ParseObject p : parseObjects) {
-                        ParseQuery<ParseUser> isInSnatch = ParseUser.getQuery();
-                        isInSnatch.whereEqualTo("phoneNumber", p.getString("phoneNumber").replaceAll(" ", ""));
-                        isInSnatch.getFirstInBackground(new GetCallback<ParseUser>() {
-                            @Override
-                            public void done(ParseUser u, ParseException e) {
-                                if (e == null) {
-                                    p.put("sms", false);
-                                    ParseQuery<ParseObject> requestSent = ParseQuery.getQuery("Friend");
-                                    requestSent.whereEqualTo("from", ParseUser.getCurrentUser().getObjectId());
-                                    requestSent.whereEqualTo("to", u.getObjectId());
-                                    requestSent.getFirstInBackground(new GetCallback<ParseObject>() {
-                                        @Override
-                                        public void done(ParseObject parseObject, ParseException e) {
-                                            if (e == null) {
-                                                Log.d("cl.snatch.snatch", "status: " + parseObject.getString("status"));
-                                                p.put("fst", parseObject.getString("status"));
-                                                if (parseObject.get("status").equals("accepted")) {
-                                                    parseObjects.remove(p);
-                                                }
-                                            } else {
-                                                Log.d("cl.snatch.snatch", "user is: " + ParseUser.getCurrentUser().toString() + " id: " + ParseUser.getCurrentUser().getObjectId());
-                                                Log.d("cl.snatch.snatch", "status: " + e.getMessage() + " " + ParseUser.getCurrentUser().getObjectId() + " " + p.getObjectId());
-                                            }
-                                            if (!p.has("fst") || !p.getString("fst").equals("accepted")) {
-                                                adapter.addFriend(parseObjects.indexOf(p), p);
-                                            }
-                                        }
-                                    });
-                                } else {
-                                    p.put("sms", true);
-                                    adapter.addFriend(parseObjects.indexOf(p), p);
-                                }
+                    adapter.addUsers(parseUsers);
+                    ParseQuery<ParseUser> notInSnatch = ParseUser.getQuery();
+                    getContacts.whereDoesNotMatchKeyInQuery("phoneNumber", "phoneNumber", notInSnatch);
+                    getContacts.orderByAscending("firstName");
+                    getContacts.addAscendingOrder("lastName");
+                    getContacts.findInBackground(new FindCallback<ParseObject>() {
+                        @Override
+                        public void done(List<ParseObject> parseObjects, ParseException e) {
+                            if (e == null) {
+                                adapter.addFriends(parseObjects);
                             }
-                        });
-                    }
-                } else {
-                    Log.d("cl.snatch.snatch", "error loading contacts: " + e.getMessage());
+                        }
+                    });
                 }
             }
         });
@@ -132,43 +104,4 @@ public class AddFriendActivity extends ActionBarActivity /*implements ContactsLo
 
         return super.onOptionsItemSelected(item);
     }
-
-    /*@Override
-    public void onLoadFinished(final Cursor cursor) {
-        // todo: iterar sobre contactos, ver quienes tienen snatch.
-
-
-        // iterar cursor y ver qué contactos son agregables y cuales son sms-ables.
-        final Set<String> contactNumbers = new HashSet<>(cursor.getCount());
-        if (cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            do {
-                contactNumbers.add(cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
-            } while (cursor.moveToNext());
-        }
-
-        ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
-        getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
-        getContacts.orderByAscending("firstName");
-        getContacts.addDescendingOrder("lastName");
-        getContacts.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> parseObjects, ParseException e) {
-                if (e == null) {
-                    for (ParseObject p : parseObjects) {
-                        if (contactNumbers.contains(p.getString("phoneNumber"))) {
-                            p.put("")
-                        }
-                    }
-                } else {
-                    Log.d("cl.snatch.snatch", "error loading contacts: " + e.getMessage());
-                }
-            }
-        });
-    }
-
-    @Override
-    public Context getContext() {
-        return this;
-    }*/
 }

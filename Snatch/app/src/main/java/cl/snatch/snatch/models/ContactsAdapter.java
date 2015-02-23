@@ -128,6 +128,29 @@ public class ContactsAdapter extends BaseAdapter implements SectionIndexer {
         return 0;
     }
 
+    public void addContact(ParseObject contact) {
+        this.contacts.add(contact);
+
+        for (int i = 0; i < contacts.size(); i++) {
+            ParseObject user = contacts.get(i);
+            String ch = user.getString("firstName").substring(0, 1).toUpperCase();
+            mapIndex.put(ch, i);
+        }
+
+        Set<String> sectionLetters = mapIndex.keySet();
+
+        // create a list from the set to sort
+        ArrayList<String> sectionList = new ArrayList<String>(sectionLetters);
+
+        Collections.sort(sectionList);
+
+        sections = new String[sectionList.size()];
+
+        sectionList.toArray(sections);
+
+        notifyDataSetChanged();
+    }
+
     public static class ViewHolder  {
         public TextView name;
         public Context context;

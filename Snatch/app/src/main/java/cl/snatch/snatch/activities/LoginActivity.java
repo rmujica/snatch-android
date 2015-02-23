@@ -344,10 +344,11 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                 }
                 contact.put("fullName", name);
                 contact.put("hidden", false);
-                contact.put("phoneNumber", number);
+                contact.put("phoneNumber", number.replaceAll(" ", ""));
                 contact.put("owner", ParseUser.getCurrentUser());
                 contact.put("ownerId", ParseUser.getCurrentUser().getObjectId());
                 contact.saveInBackground();
+                //contact.pinInBackground("myContacts");
             } while (cursor.moveToNext());
         }
 

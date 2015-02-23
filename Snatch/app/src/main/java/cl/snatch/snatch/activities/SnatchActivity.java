@@ -1,6 +1,9 @@
 package cl.snatch.snatch.activities;
 
 import android.content.ContentProviderOperation;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v7.app.ActionBarActivity;
@@ -9,18 +12,26 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import cl.snatch.snatch.R;
+import cl.snatch.snatch.helpers.MediaHelper;
+import cl.snatch.snatch.helpers.RoundCornersTransformation;
 import cl.snatch.snatch.models.SnatchingAdapter;
 
 public class SnatchActivity extends ActionBarActivity {
@@ -35,7 +46,7 @@ public class SnatchActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_snatch);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.actionbar);
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.actionbar);
         setSupportActionBar(toolbar);
 
         // initialize list
@@ -45,6 +56,31 @@ public class SnatchActivity extends ActionBarActivity {
         layoutManager = new LinearLayoutManager(this);
         list.setAdapter(adapter);
         list.setLayoutManager(layoutManager);
+
+        // set toobar header
+        getSupportActionBar().setTitle("  " + getIntent().getStringExtra("name"));
+        int avatarSize = (int) MediaHelper.convertDpToPixel(48, this);
+
+        Picasso.with(SnatchActivity.this)
+                .load(getIntent().getStringExtra("avatar"))
+                .transform(new RoundCornersTransformation())
+                .resize(avatarSize, avatarSize)
+                .into(new Target() {
+                    @Override
+                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                        toolbar.setLogo(new BitmapDrawable(getResources(), bitmap));
+                    }
+
+                    @Override
+                    public void onBitmapFailed(Drawable errorDrawable) {
+
+                    }
+
+                    @Override
+                    public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+                    }
+                });
 
         // get all contacts from user
         userId = getIntent().getStringExtra("userId");

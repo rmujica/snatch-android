@@ -8,6 +8,14 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <permission android:protectionLevel="signature"
+        android:name="cl.snatch.snatch.permission.C2D_MESSAGE" />
+    <uses-permission android:name="cl.snatch.snatch.permission.C2D_MESSAGE" />
 
     <application
         android:name=".SnatchApplication"
@@ -20,7 +28,6 @@
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -51,10 +58,45 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cl.snatch.snatch.activities.MainActivity" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="snatch" android:host="user/friendrequests" />
+            </intent-filter>
         </activity>
+
+
+
+        <service android:name="com.parse.PushService" />
+        <receiver android:name="com.parse.ParseBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.USER_PRESENT" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.parse.GcmBroadcastReceiver"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <category android:name="cl.snatch.snatch" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name="cl.snatch.snatch.receivers.PushOpenReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="com.parse.push.intent.RECEIVE" />
+                <action android:name="com.parse.push.intent.DELETE" />
+                <action android:name="com.parse.push.intent.OPEN" />
+            </intent-filter>
+        </receiver>
+
         <meta-data
             android:name="com.crashlytics.ApiKey"
             android:value="b8a84f73a2a762326445af77a4115060bdc24595" />
+
+        <meta-data android:name="com.parse.push.notification_icon" android:resource="@drawable/ic_person_add"/>
     </application>
 
 </manifest>

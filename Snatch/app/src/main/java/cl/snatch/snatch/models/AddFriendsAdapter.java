@@ -50,35 +50,47 @@ public class AddFriendsAdapter extends RecyclerView.Adapter<AddFriendsAdapter.Vi
         final ParseObject parseUser = friends.get(position);
 
         if (parseUser.has("sms") && !parseUser.getBoolean("sms")) {
-            Log.d("cl.snatch.snatch", "fst: " + parseUser.getString("fst"));
-            if (parseUser.has("fst") && parseUser.getString("fst").equals("pending")) {
-                holder.befriend.setEnabled(false);
-                holder.befriend.setText("Req. sent");
-            }
-            holder.befriend.setVisibility(View.VISIBLE);
-            holder.sms.setVisibility(View.GONE);
-            holder.befriend.setOnClickListener(new View.OnClickListener() {
+            ParseQuery<ParseObject> hasSent = ParseQuery.getQuery("Friend");
+            hasSent.fromPin("FriendRequests");
+            hasSent.whereEqualTo("toNumber", parseUser.getString("phoneNumber").replaceAll(" ", ""));
+            hasSent.getFirstInBackground(new GetCallback<ParseObject>() {
                 @Override
-                public void onClick(View v) {
-                    holder.befriend.setEnabled(false);
-                    holder.befriend.setText("Req. sent");
+                public void done(ParseObject parseObject, ParseException e) {
+                    if (parseObject != null) {
+                        // request sent
+                        holder.befriend.setEnabled(false);
+                        holder.befriend.setText("Req. sent");
+                        holder.sms.setVisibility(View.GONE);
+                    } else {
+                        holder.befriend.setVisibility(View.VISIBLE);
+                        holder.sms.setVisibility(View.GONE);
+                        holder.befriend.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                holder.befriend.setEnabled(false);
+                                holder.befriend.setText("Req. sent");
 
-                    ParseQuery<ParseUser> befriend = ParseUser.getQuery();
-                    befriend.whereEqualTo("phoneNumber", parseUser.getString("phoneNumber").replaceAll(" ", ""));
-                    befriend.getFirstInBackground(new GetCallback<ParseUser>() {
-                        @Override
-                        public void done(ParseUser p, ParseException e) {
-                            if (e == null) {
-                                ParseObject request = new ParseObject("Friend");
-                                request.put("from", ParseUser.getCurrentUser().getObjectId());
-                                request.put("to", p.getObjectId());
-                                request.put("status", "pending");
-                                request.saveInBackground();
-                            } else {
-                                Log.d("cl.snatch.snatch", "error: " + e.getMessage());
+                                ParseQuery<ParseUser> befriend = ParseUser.getQuery();
+                                befriend.whereEqualTo("phoneNumber", parseUser.getString("phoneNumber").replaceAll(" ", ""));
+                                befriend.getFirstInBackground(new GetCallback<ParseUser>() {
+                                    @Override
+                                    public void done(ParseUser p, ParseException e) {
+                                        if (e == null) {
+                                            ParseObject request = new ParseObject("Friend");
+                                            request.put("from", ParseUser.getCurrentUser().getObjectId());
+                                            request.put("to", p.getObjectId());
+                                            request.put("status", "pending");
+                                            request.saveInBackground();
+                                            request.put("toNumber", p.getString("phoneNumber"));
+                                            request.pinInBackground("FriendRequests");
+                                        } else {
+                                            Log.d("cl.snatch.snatch", "error: " + e.getMessage());
+                                        }
+                                    }
+                                });
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             });
         } else {
@@ -110,19 +122,6 @@ public class AddFriendsAdapter extends RecyclerView.Adapter<AddFriendsAdapter.Vi
         }
 
         holder.name.setText(parseUser.getString("fullName"));
-        /*Picasso.with(holder.context)
-                .load(parseUser.getParseFile("profilePicture").getUrl())
-                .transform(new RoundCornersTransformation())
-                .into(holder.avatar);
-
-        holder.container.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(holder.context, SnatchActivity.class);
-                intent.putExtra("userId", parseUser.getObjectId());
-                holder.context.startActivity(intent);
-            }
-        });*/
     }
 
     @Override
@@ -142,6 +141,24 @@ public class AddFriendsAdapter extends RecyclerView.Adapter<AddFriendsAdapter.Vi
         notifyItemInserted(this.friends.size()-1);
     }
 
+    public void addFriends(List<ParseObject> friends) {
+        int from = this.friends.size();
+        for (ParseObject o : friends) {
+            o.put("sms", true);
+        }
+        this.friends.addAll(friends);
+        notifyItemRangeInserted(from, friends.size());
+    }
+
+    public void addUsers(List<ParseUser> friends) {
+        int from = this.friends.size();
+        for (ParseObject o : friends) {
+            o.put("sms", false);
+        }
+        this.friends.addAll(friends);
+        notifyItemRangeInserted(from, friends.size());
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView name;
         public Context context;
@@ -157,4 +174,5 @@ public class AddFriendsAdapter extends RecyclerView.Adapter<AddFriendsAdapter.Vi
             befriend = (Button) itemView.findViewById(R.id.befriend);
         }
     }
+
 }

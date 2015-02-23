@@ -46,6 +46,7 @@ public class ContactsLoader implements LoaderManager.LoaderCallbacks<Cursor> {
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
     }
+    // todo: URGENTE load contacts on fragment or make receiver
 
     private Loader<Cursor> contactsLoader() {
         Uri contactsUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI; // The content URI of the phone contacts

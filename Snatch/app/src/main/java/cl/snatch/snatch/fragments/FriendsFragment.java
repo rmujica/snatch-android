@@ -73,11 +73,12 @@ public class FriendsFragment extends Fragment {
 
         // getting friend data
         // todo: URGENTE revisar amigos
+        // on friend add, fetch & pin friend
         ParseQuery<ParseUser> getFriends = ParseUser.getQuery();
         getFriends.whereContainedIn("objectId", friends);
         getFriends.orderByAscending("firstName");
         getFriends.addAscendingOrder("lastName");
-        getFriends.fromLocalDatastore();
+        //getFriends.fromLocalDatastore();
         getFriends.findInBackground(new FindCallback<ParseUser>() {
             @Override
             public void done(final List<ParseUser> parseUsers, ParseException e) {
@@ -88,6 +89,8 @@ public class FriendsFragment extends Fragment {
                 }
             }
         });
+
+
 
 
         return rootView;
