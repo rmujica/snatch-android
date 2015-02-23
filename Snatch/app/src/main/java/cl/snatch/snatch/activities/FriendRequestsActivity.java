@@ -24,7 +24,6 @@ import cl.snatch.snatch.models.FriendRequestAdapter;
 
 public class FriendRequestsActivity extends ActionBarActivity {
 
-    private static final int CONTACTS_LOADER_ID = 1;
     RecyclerView list;
     FriendRequestAdapter adapter;
     RecyclerView.LayoutManager layoutManager;
@@ -93,43 +92,4 @@ public class FriendRequestsActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-    /*@Override
-    public void onLoadFinished(final Cursor cursor) {
-        // todo: iterar sobre contactos, ver quienes tienen snatch.
-
-
-        // iterar cursor y ver qué contactos son agregables y cuales son sms-ables.
-        final Set<String> contactNumbers = new HashSet<>(cursor.getCount());
-        if (cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            do {
-                contactNumbers.add(cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)));
-            } while (cursor.moveToNext());
-        }
-
-        ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
-        getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
-        getContacts.orderByAscending("firstName");
-        getContacts.addDescendingOrder("lastName");
-        getContacts.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> parseObjects, ParseException e) {
-                if (e == null) {
-                    for (ParseObject p : parseObjects) {
-                        if (contactNumbers.contains(p.getString("phoneNumber"))) {
-                            p.put("")
-                        }
-                    }
-                } else {
-                    Log.d("cl.snatch.snatch", "error loading contacts: " + e.getMessage());
-                }
-            }
-        });
-    }
-
-    @Override
-    public Context getContext() {
-        return this;
-    }*/
 }

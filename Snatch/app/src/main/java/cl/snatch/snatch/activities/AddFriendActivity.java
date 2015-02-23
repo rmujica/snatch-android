@@ -26,12 +26,13 @@ import java.util.List;
 import java.util.Set;
 
 import cl.snatch.snatch.R;
+import cl.snatch.snatch.helpers.EmptyRecyclerView;
 import cl.snatch.snatch.models.AddFriendsAdapter;
 import cl.snatch.snatch.models.ContactsLoader;
 import cl.snatch.snatch.models.FriendsAdapter;
 
 public class AddFriendActivity extends ActionBarActivity {
-    RecyclerView list;
+    EmptyRecyclerView list;
     AddFriendsAdapter adapter;
     RecyclerView.LayoutManager layoutManager;
 
@@ -44,7 +45,8 @@ public class AddFriendActivity extends ActionBarActivity {
         setSupportActionBar(toolbar);
 
         // recyclerview setup
-        list = (RecyclerView) findViewById(R.id.list);
+        list = (EmptyRecyclerView) findViewById(R.id.list);
+        list.setEmptyView(findViewById(R.id.empty));
         list.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         adapter = new AddFriendsAdapter();

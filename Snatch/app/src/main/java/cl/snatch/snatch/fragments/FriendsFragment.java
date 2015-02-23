@@ -72,7 +72,7 @@ public class FriendsFragment extends Fragment {
         Log.d("cl.snatch.snatch", "friends: " + ParseUser.getCurrentUser().getList("friends").toString());
 
         // getting friend data
-        // todo: URGENTE revisar amigos
+        // todo: save in localdatastore
         // on friend add, fetch & pin friend
         ParseQuery<ParseUser> getFriends = ParseUser.getQuery();
         getFriends.whereContainedIn("objectId", friends);

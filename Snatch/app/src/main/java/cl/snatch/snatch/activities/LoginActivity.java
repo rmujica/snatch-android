@@ -233,7 +233,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
             public void done(ParseUser user, ParseException e) {
                 if (e == null) {
                     if (user.getNumber("phoneVerificationCode").equals(Integer.parseInt(((TextView) findViewById(R.id.code)).getText().toString()))) {
-                        // todo: wait until contacts upload finish
+
                         ParseUser u = ParseUser.getCurrentUser();
                         u.put("verified", true);
                         u.saveInBackground(new SaveCallback() {

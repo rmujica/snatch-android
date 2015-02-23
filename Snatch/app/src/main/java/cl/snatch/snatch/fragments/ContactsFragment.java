@@ -57,7 +57,7 @@ public class ContactsFragment extends ListFragment implements ContactsLoader.Loa
 
         // get contacts
 
-        // todo: URGENTE revisar contactos
+        // todo: save in localdatastore
         ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
         getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
         getContacts.orderByAscending("firstName");

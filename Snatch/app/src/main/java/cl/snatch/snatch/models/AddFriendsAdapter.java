@@ -61,6 +61,7 @@ public class AddFriendsAdapter extends RecyclerView.Adapter<AddFriendsAdapter.Vi
                         holder.befriend.setEnabled(false);
                         holder.befriend.setText("Req. sent");
                         holder.sms.setVisibility(View.GONE);
+                        holder.befriend.setVisibility(View.VISIBLE);
                     } else {
                         holder.befriend.setVisibility(View.VISIBLE);
                         holder.sms.setVisibility(View.GONE);
