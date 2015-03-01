@@ -15,20 +15,21 @@
         android:background="?attr/colorPrimary" />
 
     <cl.snatch.snatch.helpers.EmptyRecyclerView
+        android:layout_below="@id/actionbar"
         android:id="@+id/list"
         android:scrollbars="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
     <TextView
-        android:layout_below="@id/actionbar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/empty_requests"
         android:id="@+id/empty"
+        android:gravity="center_horizontal"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:gravity="center_horizontal" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

@@ -32,7 +32,7 @@ import cl.snatch.snatch.models.ContactsLoader;
 import cl.snatch.snatch.models.FriendsAdapter;
 
 public class AddFriendActivity extends ActionBarActivity {
-    EmptyRecyclerView list;
+    RecyclerView list;
     AddFriendsAdapter adapter;
     RecyclerView.LayoutManager layoutManager;
 
@@ -45,8 +45,7 @@ public class AddFriendActivity extends ActionBarActivity {
         setSupportActionBar(toolbar);
 
         // recyclerview setup
-        list = (EmptyRecyclerView) findViewById(R.id.list);
-        list.setEmptyView(findViewById(R.id.empty));
+        list = (RecyclerView) findViewById(R.id.list);
         list.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         adapter = new AddFriendsAdapter();
@@ -100,9 +99,6 @@ public class AddFriendActivity extends ActionBarActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }

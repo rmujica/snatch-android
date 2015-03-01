@@ -78,7 +78,7 @@ public class FriendsFragment extends Fragment {
         getFriends.whereContainedIn("objectId", friends);
         getFriends.orderByAscending("firstName");
         getFriends.addAscendingOrder("lastName");
-        //getFriends.fromLocalDatastore();
+        getFriends.fromLocalDatastore();
         getFriends.findInBackground(new FindCallback<ParseUser>() {
             @Override
             public void done(final List<ParseUser> parseUsers, ParseException e) {

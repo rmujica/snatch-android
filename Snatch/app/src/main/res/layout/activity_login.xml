@@ -84,15 +84,6 @@
                 android:layout_alignRight="@+id/lastName"
                 android:layout_alignEnd="@+id/lastName" />
 
-            <Button
-                android:layout_marginTop="8dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/do_login"
-                android:id="@+id/dologin"
-                android:layout_below="@+id/sms_txt"
-                android:layout_toLeftOf="@id/register" />
-
             <TextView
                 android:layout_alignLeft="@+id/code"
                 android:layout_alignStart="@+id/code"
@@ -128,6 +119,18 @@
                 android:layout_height="wrap_content"
                 android:text="@string/create_account"
                 android:id="@+id/verify"
+                android:layout_below="@+id/code"
+                android:layout_alignRight="@+id/code"
+                android:layout_alignEnd="@+id/code" />
+
+
+            <Button
+                android:layout_marginTop="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"
+                android:text="@string/login_existing_account"
+                android:id="@+id/dologin"
                 android:layout_below="@+id/code"
                 android:layout_alignRight="@+id/code"
                 android:layout_alignEnd="@+id/code" />

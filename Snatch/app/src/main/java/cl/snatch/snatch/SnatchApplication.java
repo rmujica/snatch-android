@@ -37,7 +37,7 @@ public class SnatchApplication extends Application {
             }
         });
 
-        ParseUser.getCurrentUser().fetchIfNeededInBackground();
+        if (ParseUser.getCurrentUser() != null) ParseUser.getCurrentUser().fetchIfNeededInBackground();
 
         //getContentResolver().registerContentObserver(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, true, new PhoneObserver(null));
 

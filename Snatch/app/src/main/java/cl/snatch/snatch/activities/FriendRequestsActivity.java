@@ -19,12 +19,13 @@ import com.parse.ParseUser;
 import java.util.List;
 
 import cl.snatch.snatch.R;
+import cl.snatch.snatch.helpers.EmptyRecyclerView;
 import cl.snatch.snatch.models.AddFriendsAdapter;
 import cl.snatch.snatch.models.FriendRequestAdapter;
 
 public class FriendRequestsActivity extends ActionBarActivity {
 
-    RecyclerView list;
+    EmptyRecyclerView list;
     FriendRequestAdapter adapter;
     RecyclerView.LayoutManager layoutManager;
 
@@ -37,7 +38,8 @@ public class FriendRequestsActivity extends ActionBarActivity {
         setSupportActionBar(toolbar);
 
         // recyclerview setup
-        list = (RecyclerView) findViewById(R.id.list);
+        list = (EmptyRecyclerView) findViewById(R.id.list);
+        list.setEmptyView(findViewById(R.id.empty));
         list.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         adapter = new FriendRequestAdapter(/*list*/);
@@ -84,11 +86,6 @@ public class FriendRequestsActivity extends ActionBarActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }

@@ -20,13 +20,17 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
+import com.parse.FindCallback;
 import com.parse.FunctionCallback;
 import com.parse.GetCallback;
 import com.parse.LogInCallback;
 import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseFile;
+import com.parse.ParseInstallation;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.parse.SignUpCallback;
@@ -38,6 +42,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import butterknife.ButterKnife;
@@ -56,10 +61,12 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
     private static final int CONTACTS_LOADER_ID = 1;
     private Uri avatarUri;
     private Bitmap avatarBitmap = null;
+    private String phoneNumber = "";
 
     @InjectView(R.id.avatar) ImageView avatar;
     @InjectView(R.id.register) Button register;
     @InjectView(R.id.verify) Button verify;
+    @InjectView(R.id.dologin) Button login;
     private boolean uploadFinished = false;
     private boolean isVerified = false;
 
@@ -97,24 +104,62 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
 
     @OnClick(R.id.dologin)
     public void doLogin(final Button login) {
-        // todo: do this right using sms
-        String username = ((TextView) findViewById(R.id.phone)).getText().toString();
-        String password = "";
-        try {
-            password = MediaHelper.computeHash(salt+((TextView) findViewById(R.id.phone)).getText().toString());
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        ParseUser.logInInBackground(username, password, new LogInCallback() {
-            @Override
-            public void done(ParseUser user, ParseException e) {
-                if (user != null) {
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(intent); // for result??
-                    finish();
-                }
+        ParseUser user = ParseUser.getCurrentUser();
+        String code = ((TextView) findViewById(R.id.code)).getText().toString();
+        login.setEnabled(false);
+        if (user != null && !code.isEmpty()) {
+            if (user.getNumber("phoneVerificationCode").equals(Integer.parseInt(code))) {
+                ParseUser u = ParseUser.getCurrentUser();
+                u.put("verified", true);
+                u.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        if (e == null) {
+                            // save installation
+                            ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+                            installation.put("ownerId", ParseUser.getCurrentUser().getObjectId());
+                            installation.saveInBackground();
+
+                            // pull friend list and save
+                            // get friend list
+                            final ArrayList<String> friends =
+                                    new ArrayList<>(ParseUser.getCurrentUser().getList("friends").size());
+                            friends.addAll(ParseUser.getCurrentUser().<String>getList("friends"));
+
+                            // getting friend data
+                            ParseQuery<ParseUser> getFriends = ParseUser.getQuery();
+                            getFriends.whereContainedIn("objectId", friends);
+                            getFriends.orderByAscending("firstName");
+                            getFriends.addAscendingOrder("lastName");
+                            getFriends.findInBackground(new FindCallback<ParseUser>() {
+                                @Override
+                                public void done(final List<ParseUser> parseUsers, ParseException e) {
+                                    if (e == null) {
+                                        ParseUser.pinAllInBackground("myFriends", parseUsers, new SaveCallback() {
+                                            @Override
+                                            public void done(ParseException e) {
+                                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                                startActivity(intent); // for result??
+                                                finish();
+                                            }
+                                        });
+                                    } else {
+                                        Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error loading friends: " + e.getMessage());
+                                    }
+                                }
+                            });
+                        } else {
+                            Log.d("cl.snatch.snatch", "err: " + e.getMessage());
+                        }
+                    }
+                });
+            } else {
+                // todo: tell user code doesn't match
+                ParseUser.logOut();
+                login.setEnabled(true);
+                Log.d("cl.snatch.snatch", "neq: " + String.valueOf(user.getNumber("phoneVerificationCode")) + " " + ((TextView) findViewById(R.id.code)).getText().toString());
             }
-        });
+        }
     }
 
     @OnClick(R.id.register)
@@ -135,6 +180,8 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
         myUser.put("reach", 0);
         myUser.put("friends", new ArrayList<JSONObject>());
         myUser.put("verified", false);
+
+        phoneNumber = ((TextView) findViewById(R.id.phone)).getText().toString();
 
         // save bitmap as byte
         if (avatarBitmap != null) {
@@ -170,6 +217,8 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                                         }
                                     });
                                 } else {
+                                    // todo: login user instead
+                                    stepTwoLogin();
                                     Log.d("cl.snatch.snatch", "pp: " + e.getMessage());
                                 }
                             }
@@ -204,12 +253,54 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                             }
                         });
                     } else {
+                        // todo: login user instead
+                        stepTwoLogin();
                         Log.d("cl.snatch.snatch", "np: " + e.getMessage());
                     }
                 }
             });
             register.setEnabled(true);
         }
+    }
+
+    private void stepTwoLogin() {
+        login.setVisibility(View.VISIBLE);
+        findViewById(R.id.pb).setVisibility(View.VISIBLE);
+        findViewById(R.id.contacts).setVisibility(View.VISIBLE);
+        findViewById(R.id.firstName).setVisibility(View.INVISIBLE);
+        findViewById(R.id.lastName).setVisibility(View.INVISIBLE);
+        findViewById(R.id.phone).setVisibility(View.INVISIBLE);
+        findViewById(R.id.code).setVisibility(View.VISIBLE);
+        findViewById(R.id.sms_txt).setVisibility(View.INVISIBLE);
+        findViewById(R.id.avatar).setVisibility(View.INVISIBLE);
+        register.setVisibility(View.INVISIBLE);
+
+        // resend sms
+
+        String username = phoneNumber;
+        String password = "";
+        try {
+            password = MediaHelper.computeHash(salt+phoneNumber);
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        ParseUser.logInInBackground(username, password, new LogInCallback() {
+            @Override
+            public void done(ParseUser user, ParseException e) {
+
+                Map<String, Object> params = new HashMap<>();
+                params.put("phoneNumber", phoneNumber);
+
+                ParseCloud.callFunctionInBackground("resendVerificationCode", params,  new FunctionCallback<Object>() {
+                    @Override
+                    public void done(Object o, ParseException e) {
+                        if (e != null)
+                            Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
+                        else Log.d("cl.snatch.snatch", "noerr: " + o.toString());
+                    }
+                });
+            }
+        });
     }
 
     private void stepTwo() {
@@ -243,6 +334,11 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                                     isVerified = true;
 
                                     if (uploadFinished) {
+                                        // save installation
+                                        ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+                                        installation.put("ownerId", ParseUser.getCurrentUser().getObjectId());
+                                        installation.saveInBackground();
+
                                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                                         startActivity(intent); // for result??
                                         finish();
@@ -316,12 +412,6 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -355,6 +445,11 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
         uploadFinished = true;
 
         if (isVerified) {
+            // save installation
+            ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+            installation.put("ownerId", ParseUser.getCurrentUser().getObjectId());
+            installation.saveInBackground();
+
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(intent); // for result??
             finish();

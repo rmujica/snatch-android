@@ -101,6 +101,7 @@ public class ContactsFragment extends ListFragment implements ContactsLoader.Loa
                 final ParseQuery<ParseObject> isNew = ParseQuery.getQuery("Contact");
                 //isNew.fromPin("myContacts");
                 isNew.whereEqualTo("phoneNumber", number.replaceAll(" ", ""));
+                isNew.whereEqualTo("owner", ParseUser.getCurrentUser());
                 isNew.getFirstInBackground(new GetCallback<ParseObject>() {
                     @Override
                     public void done(ParseObject parseObject, ParseException e) {
@@ -120,6 +121,8 @@ public class ContactsFragment extends ListFragment implements ContactsLoader.Loa
                             contact.put("ownerId", ParseUser.getCurrentUser().getObjectId());
                             contact.saveInBackground();
                             adapter.addContact(contact);
+                        } else {
+                            Log.d("cl.snatch.snatch", "exists: " + parseObject.getString("fullName") + " " + parseObject.getString("owner") + " " + parseObject.getString("phoneNumber"));
                         }
                     }
                 });
