@@ -28,8 +28,8 @@
         android:text="@string/empty_requests"
         android:id="@+id/empty"
         android:gravity="center_horizontal"
-        android:layout_centerVertical="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignBaseline="@+id/list"
+        android:layout_alignBottom="@+id/list"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

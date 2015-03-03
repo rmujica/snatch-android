@@ -37,10 +37,17 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
         final ParseUser parseUser = friends.get(position);
 
         holder.name.setText(parseUser.getString("firstName") + " " + parseUser.getString("lastName"));
-        Picasso.with(holder.context)
-                .load(parseUser.getParseFile("profilePicture").getUrl())
-                .transform(new RoundCornersTransformation())
-                .into(holder.avatar);
+        if (parseUser.getParseFile("profilePicture") != null) {
+            Picasso.with(holder.context)
+                    .load(parseUser.getParseFile("profilePicture").getUrl())
+                    .transform(new RoundCornersTransformation())
+                    .into(holder.avatar);
+        } else {
+            Picasso.with(holder.context)
+                    .load(R.drawable.ic_avatar)
+                    .transform(new RoundCornersTransformation())
+                    .into(holder.avatar);
+        }
 
         holder.container.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -48,7 +55,10 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
                 Intent intent = new Intent(holder.context, SnatchActivity.class);
                 intent.putExtra("userId", parseUser.getObjectId());
                 intent.putExtra("name", parseUser.getString("fullName"));
-                intent.putExtra("avatar", parseUser.getParseFile("profilePicture").getUrl());
+                if (parseUser.getParseFile("profilePicture") != null)
+                    intent.putExtra("avatar", parseUser.getParseFile("profilePicture").getUrl());
+                else
+                    intent.putExtra("avatar", "noavatar");
                 holder.context.startActivity(intent);
             }
         });

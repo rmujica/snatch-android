@@ -55,8 +55,10 @@ public class AddFriendActivity extends ActionBarActivity {
         final ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
         getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
         getContacts.setLimit(1000);
+
         ParseQuery<ParseUser> isInSnatch = ParseUser.getQuery();
         isInSnatch.whereMatchesKeyInQuery("phoneNumber", "phoneNumber", getContacts);
+        Log.d("cl.snatch.snatch", "friends: " + ParseUser.getCurrentUser().getList("friends").toString());
         isInSnatch.whereNotContainedIn("objectId", ParseUser.getCurrentUser().getList("friends"));
         isInSnatch.orderByAscending("firstName");
         isInSnatch.addAscendingOrder("lastName");

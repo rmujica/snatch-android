@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.provider.ContactsContract;
 import android.util.Log;
 
+import com.parse.GetCallback;
 import com.parse.Parse;
 import com.crashlytics.android.Crashlytics;
 import com.parse.ParseException;
@@ -24,7 +25,7 @@ public class SnatchApplication extends Application {
         // Enable Local Datastore.
         Parse.enableLocalDatastore(this);
 
-        Parse.initialize(this, "QS802Iea2y3vcdzbzBMu7DA69E5ypNvDBv5htvgr", "V8ds1CarINcpDBrVNKiHgo7qrjth9sUx7GhwfdPK");
+        Parse.initialize(this, "1U2LFANC7maXJsJ8fdfnrVJFVPnLRo8fgwp3LaF1", "PK45p00Ep07FB4HhTUwOVYuv1ebAXXCb4Hnbh5M3");
 
         ParsePush.subscribeInBackground("", new SaveCallback() {
             @Override
@@ -37,7 +38,15 @@ public class SnatchApplication extends Application {
             }
         });
 
-        if (ParseUser.getCurrentUser() != null) ParseUser.getCurrentUser().fetchIfNeededInBackground();
+        if (ParseUser.getCurrentUser() != null) {
+            Log.d("cl.snatch.snatch", "fetching in background");
+            ParseUser.getCurrentUser().fetchInBackground(new GetCallback<ParseUser>() {
+                @Override
+                public void done(ParseUser parseUser, ParseException e) {
+                    ParseUser.becomeInBackground(parseUser.getSessionToken());
+                }
+            });
+        }
 
         //getContentResolver().registerContentObserver(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, true, new PhoneObserver(null));
 

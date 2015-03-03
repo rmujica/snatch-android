@@ -50,9 +50,21 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
                         if (e == null) {
                             parseObject.put("status", "accepted");
                             parseObject.saveInBackground();
-                            int i = friends.indexOf(parseUser);
-                            friends.remove(parseUser);
-                            notifyItemRemoved(i);
+
+                            // get friend object
+                            ParseQuery<ParseUser> newFriend = ParseUser.getQuery();
+                            newFriend.getInBackground(parseUser.getObjectId(), new GetCallback<ParseUser>() {
+                                @Override
+                                public void done(ParseUser parseUser, ParseException e) {
+                                    parseUser.pinInBackground("myFriends");
+                                    ParseUser.getCurrentUser().addUnique("friends", parseUser.getObjectId());
+                                    ParseUser.getCurrentUser().saveEventually();
+
+                                    int i = friends.indexOf(parseUser);
+                                    friends.remove(parseUser);
+                                    notifyItemRemoved(i);
+                                }
+                            });
                         }
                     }
                 });

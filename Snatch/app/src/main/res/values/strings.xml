@@ -39,7 +39,7 @@
     <string name="empty_friends">You don\'t have friends yet.\nYou can add using the button above.</string>
     <string name="search">Search</string>
     <string name="do_login">Already registered?</string>
-    <string name="empty_requests">You don\'t have friend requests pending.</string>
+    <string name="empty_requests">You don\'t have friend\nrequests pending.</string>
     <string name="login_existing_account">Login</string>
 
 </resources>

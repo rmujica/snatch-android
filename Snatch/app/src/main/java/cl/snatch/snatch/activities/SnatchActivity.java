@@ -61,26 +61,28 @@ public class SnatchActivity extends ActionBarActivity {
         getSupportActionBar().setTitle("  " + getIntent().getStringExtra("name"));
         int avatarSize = (int) MediaHelper.convertDpToPixel(48, this);
 
-        Picasso.with(SnatchActivity.this)
-                .load(getIntent().getStringExtra("avatar"))
-                .transform(new RoundCornersTransformation())
-                .resize(avatarSize, avatarSize)
-                .into(new Target() {
-                    @Override
-                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                        toolbar.setLogo(new BitmapDrawable(getResources(), bitmap));
-                    }
+        if (getIntent().getStringExtra("avatar") != null && !getIntent().getStringExtra("avatar").equals("noavatar")) {
+            Picasso.with(SnatchActivity.this)
+                    .load(getIntent().getStringExtra("avatar"))
+                    .transform(new RoundCornersTransformation())
+                    .resize(avatarSize, avatarSize)
+                    .into(new Target() {
+                        @Override
+                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                            toolbar.setLogo(new BitmapDrawable(getResources(), bitmap));
+                        }
 
-                    @Override
-                    public void onBitmapFailed(Drawable errorDrawable) {
+                        @Override
+                        public void onBitmapFailed(Drawable errorDrawable) {
 
-                    }
+                        }
 
-                    @Override
-                    public void onPrepareLoad(Drawable placeHolderDrawable) {
+                        @Override
+                        public void onPrepareLoad(Drawable placeHolderDrawable) {
 
-                    }
-                });
+                        }
+                    });
+        }
 
         // get all contacts from user
         userId = getIntent().getStringExtra("userId");

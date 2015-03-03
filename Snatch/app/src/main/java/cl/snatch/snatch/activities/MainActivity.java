@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -57,6 +58,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
      * The {@link ViewPager} that will host the section contents.
      */
     ViewPager mViewPager;
+    private SearchView searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,8 +96,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         list.setLayoutManager(layoutManager);
         MenuItem searchItem = toolbar.getMenu().findItem(R.id.action_search);
         if (searchItem != null) {
-            final SearchView searchView = (SearchView) searchItem.getActionView();
-            searchView.setQueryHint("Reach: 626");
+            searchView = (SearchView) searchItem.getActionView();
+            searchView.setQueryHint("Reach: 0");
             searchView.setOnCloseListener(new SearchView.OnCloseListener() {
                 @Override
                 public boolean onClose() {
@@ -213,6 +215,29 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
     @Override
     public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // fetch user
+        ParseUser.getCurrentUser().fetchIfNeededInBackground(new GetCallback<ParseUser>() {
+            @Override
+            public void done(ParseUser user, ParseException e) {
+                if (e == null) {
+                    if (searchView != null) {
+                        int i;
+                        if (user.containsKey("reach") && user.getNumber("reach").intValue() >= 0) {
+                            i = user.getNumber("reach").intValue();
+                        } else {
+                            i = 0;
+                        }
+                        searchView.setQueryHint("Reach: " + String.valueOf(i));
+                    }
+                }
+            }
+        });
     }
 
 }

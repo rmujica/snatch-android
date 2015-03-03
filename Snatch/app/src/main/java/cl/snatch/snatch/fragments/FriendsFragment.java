@@ -69,7 +69,7 @@ public class FriendsFragment extends Fragment {
                 new ArrayList<>(ParseUser.getCurrentUser().getList("friends").size());
         friends.addAll(ParseUser.getCurrentUser().<String>getList("friends"));
 
-        Log.d("cl.snatch.snatch", "friends: " + ParseUser.getCurrentUser().getList("friends").toString());
+        Log.d("cl.snatch.snatch", "friends f: " + ParseUser.getCurrentUser().getList("friends").toString());
 
         // getting friend data
         // todo: save in localdatastore
