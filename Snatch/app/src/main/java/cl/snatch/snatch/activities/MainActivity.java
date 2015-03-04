@@ -11,6 +11,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -97,6 +98,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         MenuItem searchItem = toolbar.getMenu().findItem(R.id.action_search);
         if (searchItem != null) {
             searchView = (SearchView) searchItem.getActionView();
+            searchView.setInputType(InputType.TYPE_TEXT_FLAG_CAP_WORDS);
             searchView.setQueryHint("Reach: 0");
             searchView.setOnCloseListener(new SearchView.OnCloseListener() {
                 @Override

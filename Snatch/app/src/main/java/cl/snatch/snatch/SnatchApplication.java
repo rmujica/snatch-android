@@ -40,10 +40,11 @@ public class SnatchApplication extends Application {
 
         if (ParseUser.getCurrentUser() != null) {
             Log.d("cl.snatch.snatch", "fetching in background");
-            ParseUser.getCurrentUser().fetchInBackground(new GetCallback<ParseUser>() {
+            ParseUser.getCurrentUser().fetchIfNeededInBackground(new GetCallback<ParseUser>() {
                 @Override
                 public void done(ParseUser parseUser, ParseException e) {
-                    ParseUser.becomeInBackground(parseUser.getSessionToken());
+                    if (e == null)
+                        ParseUser.becomeInBackground(parseUser.getSessionToken());
                 }
             });
         }

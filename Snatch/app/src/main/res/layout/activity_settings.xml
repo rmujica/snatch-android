@@ -14,22 +14,10 @@
         android:minHeight="?attr/actionBarSize"
         android:background="?attr/colorPrimary" />
 
-    <cl.snatch.snatch.helpers.EmptyRecyclerView
-        android:layout_below="@id/actionbar"
-        android:id="@+id/list"
-        android:scrollbars="vertical"
+    <FrameLayout
+        android:id="@+id/content_frame"
+        android:layout_below="@+id/actionbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/empty_requests"
-        android:id="@+id/empty"
-        android:gravity="center_horizontal"
-        android:layout_alignBaseline="@+id/list"
-        android:layout_alignBottom="@+id/list"
-        android:layout_centerInParent="true" />
+        android:layout_height="wrap_content"/>
 
 </RelativeLayout>

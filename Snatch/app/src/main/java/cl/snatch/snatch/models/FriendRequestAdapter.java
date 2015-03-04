@@ -14,6 +14,7 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,14 +56,17 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
                             ParseQuery<ParseUser> newFriend = ParseUser.getQuery();
                             newFriend.getInBackground(parseUser.getObjectId(), new GetCallback<ParseUser>() {
                                 @Override
-                                public void done(ParseUser parseUser, ParseException e) {
+                                public void done(final ParseUser parseUser, ParseException e) {
                                     parseUser.pinInBackground("myFriends");
                                     ParseUser.getCurrentUser().addUnique("friends", parseUser.getObjectId());
-                                    ParseUser.getCurrentUser().saveEventually();
-
-                                    int i = friends.indexOf(parseUser);
-                                    friends.remove(parseUser);
-                                    notifyItemRemoved(i);
+                                    ParseUser.getCurrentUser().saveEventually(new SaveCallback() {
+                                        @Override
+                                        public void done(ParseException e) {
+                                            int i = friends.indexOf(parseUser);
+                                            friends.remove(parseUser);
+                                            notifyItemRemoved(i);
+                                        }
+                                    });
                                 }
                             });
                         }
