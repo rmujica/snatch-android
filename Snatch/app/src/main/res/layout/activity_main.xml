@@ -10,6 +10,7 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
+        android:elevation="2dp"
         android:minHeight="?attr/actionBarSize"
         android:background="?attr/colorPrimary">
     </android.support.v7.widget.Toolbar>
@@ -20,6 +21,7 @@
         android:id="@+id/sliding_tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:elevation="2dp"
         android:foregroundGravity="center_horizontal" />
 
     <android.support.v4.view.ViewPager
@@ -29,6 +31,7 @@
         android:layout_height="match_parent" />
 
     <android.support.v7.widget.RecyclerView
+        android:elevation="2dp"
         android:layout_below="@id/actionbar"
         android:background="@android:color/white"
         android:id="@+id/list"

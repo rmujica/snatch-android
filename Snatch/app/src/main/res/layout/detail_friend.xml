@@ -8,8 +8,8 @@
     android:layout_height="match_parent">
 
     <ImageView android:id="@+id/avatar"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
         android:src="@drawable/ic_avatar"
         android:layout_gravity="center_vertical" />
 

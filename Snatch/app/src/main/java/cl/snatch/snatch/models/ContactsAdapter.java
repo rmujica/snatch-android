@@ -85,13 +85,13 @@ public class ContactsAdapter extends BaseAdapter implements SectionIndexer {
         }
 
         holder.name.setText(user.getString("fullName"));
+        //holder.numbers.setText(user.getString("phoneNumber"));
+        holder.snatched.setChecked(!user.getBoolean("hidden"));
         if (holder.snatched.isChecked()) {
             holder.name.setTextColor(Color.BLACK);
         } else {
             holder.name.setTextColor(Color.LTGRAY);
         }
-        //holder.numbers.setText(user.getString("phoneNumber"));
-        holder.snatched.setChecked(!user.getBoolean("hidden"));
         holder.snatched.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

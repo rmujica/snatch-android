@@ -28,20 +28,25 @@
 
     </LinearLayout>
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
+    <ImageView
+        android:clickable="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:src="@drawable/ic_call"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Call"
+        android:contentDescription="Call"
+        android:layout_marginRight="16dp"
         android:id="@+id/call"
-        android:layout_gravity="right" />
+        android:layout_gravity="center_vertical|right" />
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
+    <ImageView
+        android:clickable="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:src="@drawable/ic_download"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Snatch"
+        android:contentDescription="Retrieve"
         android:id="@+id/snatch"
-        android:layout_gravity="right" />
+        android:layout_gravity="center_vertical|right" />
 
 </LinearLayout>

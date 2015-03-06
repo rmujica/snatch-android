@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.parse.CountCallback;
 import com.parse.FindCallback;
@@ -35,6 +36,7 @@ public class AddFriendActivity extends ActionBarActivity {
     RecyclerView list;
     AddFriendsAdapter adapter;
     RecyclerView.LayoutManager layoutManager;
+    View pb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,9 +50,11 @@ public class AddFriendActivity extends ActionBarActivity {
         list = (RecyclerView) findViewById(R.id.list);
         list.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
-        adapter = new AddFriendsAdapter();
+        adapter = new AddFriendsAdapter(this.getApplicationContext());
         list.setAdapter(adapter);
         list.setLayoutManager(layoutManager);
+
+        pb = findViewById(R.id.progressBar);
 
         final ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
         getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
@@ -60,6 +64,7 @@ public class AddFriendActivity extends ActionBarActivity {
         isInSnatch.whereMatchesKeyInQuery("phoneNumber", "phoneNumber", getContacts);
         Log.d("cl.snatch.snatch", "friends: " + ParseUser.getCurrentUser().getList("friends").toString());
         isInSnatch.whereNotContainedIn("objectId", ParseUser.getCurrentUser().getList("friends"));
+        isInSnatch.whereNotEqualTo("objectId", ParseUser.getCurrentUser().getObjectId());
         isInSnatch.orderByAscending("firstName");
         isInSnatch.addAscendingOrder("lastName");
         isInSnatch.setLimit(1000);
@@ -68,6 +73,7 @@ public class AddFriendActivity extends ActionBarActivity {
             public void done(List<ParseUser> parseUsers, ParseException e) {
                 if (e == null) {
                     adapter.addUsers(parseUsers);
+                    adapter.addSep();
                     ParseQuery<ParseUser> notInSnatch = ParseUser.getQuery();
                     getContacts.whereDoesNotMatchKeyInQuery("phoneNumber", "phoneNumber", notInSnatch);
                     getContacts.orderByAscending("firstName");
@@ -77,6 +83,7 @@ public class AddFriendActivity extends ActionBarActivity {
                         public void done(List<ParseObject> parseObjects, ParseException e) {
                             if (e == null) {
                                 adapter.addFriends(parseObjects);
+                                if (pb.getVisibility() == View.VISIBLE) pb.setVisibility(View.GONE);
                             }
                         }
                     });

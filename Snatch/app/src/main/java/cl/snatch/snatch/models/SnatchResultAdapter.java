@@ -3,6 +3,7 @@ package cl.snatch.snatch.models;
 import android.content.ContentProviderOperation;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -94,8 +96,8 @@ public class SnatchResultAdapter extends RecyclerView.Adapter<SnatchResultAdapte
         public Context context;
         public TextView numbers;
         public View container;
-        public Button call;
-        public Button snatch;
+        public View call;
+        public View snatch;
 
         public ViewHolder(View itemView, Context context) {
             super(itemView);
@@ -103,8 +105,10 @@ public class SnatchResultAdapter extends RecyclerView.Adapter<SnatchResultAdapte
             container = itemView;
             name = (TextView) itemView.findViewById(R.id.name);
             numbers = (TextView) itemView.findViewById(R.id.numbers);
-            snatch = (Button) itemView.findViewById(R.id.snatch);
-            call = (Button) itemView.findViewById(R.id.call);
+            snatch = itemView.findViewById(R.id.snatch);
+            ((ImageView) snatch).setColorFilter(Color.argb(255, 43, 160, 191));
+            call = itemView.findViewById(R.id.call);
+            ((ImageView) call).setColorFilter(Color.argb(255, 43, 160, 191));
         }
     }
 

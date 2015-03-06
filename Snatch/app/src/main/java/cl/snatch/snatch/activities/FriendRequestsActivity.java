@@ -8,6 +8,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.parse.FindCallback;
 import com.parse.GetCallback;
@@ -28,6 +29,8 @@ public class FriendRequestsActivity extends ActionBarActivity {
     EmptyRecyclerView list;
     FriendRequestAdapter adapter;
     RecyclerView.LayoutManager layoutManager;
+    View pb;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +49,8 @@ public class FriendRequestsActivity extends ActionBarActivity {
         list.setAdapter(adapter);
         list.setLayoutManager(layoutManager);
 
+//        pb = findViewById(R.id.progressBar);
+
         ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Friend");
         getContacts.whereEqualTo("to", ParseUser.getCurrentUser().getObjectId());
         getContacts.whereEqualTo("status", "pending");
@@ -61,6 +66,7 @@ public class FriendRequestsActivity extends ActionBarActivity {
                             public void done(ParseUser u, ParseException e) {
                                 if (e == null) {
                                     adapter.addFriend(u);
+                                    //if (pb.getVisibility() == View.VISIBLE) pb.setVisibility(View.GONE);
                                 }
                             }
                         });

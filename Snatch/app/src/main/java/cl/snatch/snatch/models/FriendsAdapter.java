@@ -70,6 +70,10 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.ViewHold
     }
 
     public void updateFriends(List<ParseUser> friends) {
+        int s = this.friends.size();
+        this.friends.clear();
+        this.notifyItemRangeRemoved(0, s);
+
         this.friends.addAll(friends);
         notifyItemRangeInserted(0, friends.size());
     }

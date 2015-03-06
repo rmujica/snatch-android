@@ -12,11 +12,14 @@ import com.parse.ParseException;
 import com.parse.ParsePush;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
+import com.squareup.otto.Bus;
 
 import cl.snatch.snatch.receivers.PhoneObserver;
 import io.fabric.sdk.android.Fabric;
 
 public class SnatchApplication extends Application {
+
+    private static final Bus BUS = new Bus();
 
     @Override
     public void onCreate() {
@@ -51,6 +54,10 @@ public class SnatchApplication extends Application {
 
         //getContentResolver().registerContentObserver(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, true, new PhoneObserver(null));
 
+    }
+
+    public static Bus getInstance() {
+        return BUS;
     }
 
 }

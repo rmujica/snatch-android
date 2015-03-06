@@ -1,12 +1,14 @@
 package cl.snatch.snatch.models;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.parse.GetCallback;
@@ -75,6 +77,8 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
             }
         });
 
+        // todo: improve
+
         holder.reject.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -116,16 +120,18 @@ public class FriendRequestAdapter extends RecyclerView.Adapter<FriendRequestAdap
         public TextView number;
         public Context context;
         public View container;
-        public Button accept;
-        public Button reject;
+        public View accept;
+        public View reject;
         public ViewHolder(View itemView, Context context) {
             super(itemView);
             this.context = context;
             container = itemView;
             name = (TextView) itemView.findViewById(R.id.name);
-            accept = (Button) itemView.findViewById(R.id.accept);
-            reject = (Button) itemView.findViewById(R.id.reject);
+            accept = itemView.findViewById(R.id.accept);
+            reject = itemView.findViewById(R.id.reject);
+            ((ImageView) accept).setColorFilter(Color.argb(255, 43, 160, 191));
             number = (TextView) itemView.findViewById(R.id.number);
+            ((ImageView) reject).setColorFilter(Color.argb(255, 43, 160, 191));
         }
     }
 }

@@ -31,7 +31,7 @@
     <string name="action_add_friend">Add new friend</string>
     <string name="title_activity_add_friend">Add new friend</string>
     <string name="uploading_contacts">The verification SMS should arrive shortly. In the meanwhile, we are uploading your current phonebook to Jumpster.</string>
-    <string name="still_uploading">Still importing contacts...</string>
+    <string name="still_uploading">Still uploading contacts...</string>
     <string name="title_activity_friend_requests">Friend requests</string>
     <string name="action_friend_requests">Friend requests</string>
     <string name="accept">Accept</string>
@@ -43,5 +43,15 @@
     <string name="login_existing_account">Login</string>
     <string name="account">Account</string>
     <string name="toc">Terms and Conditions</string>
+    <string name="sms_message">Hey! I\'m using Jumpster! Get it at http://www.jumpsterapp.com</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="change_avatar">Change Profile Picture</string>
+    <string name="sync_contacts">Sync Contacts</string>
+    <string name="update">Update Profile</string>
+    <string name="title_activity_account_settings">Account Settings</string>
+    <string name="profile_updated">Profile updated!</string>
+    <string name="friends_in_jumpster">Friends in Jumpster</string>
+    <string name="invite_friends_to_jumpster">Invite friends to Jumpster</string>
 
 </resources>

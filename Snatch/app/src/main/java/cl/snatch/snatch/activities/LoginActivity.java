@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -62,6 +63,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
     private Uri avatarUri;
     private Bitmap avatarBitmap = null;
     private String phoneNumber = "";
+    private SharedPreferences sharedPref;
 
     @InjectView(R.id.avatar) ImageView avatar;
     @InjectView(R.id.register) Button register;
@@ -221,6 +223,11 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                                     stepTwoLogin();
                                     Log.d("cl.snatch.snatch", "pp: " + e.getMessage());
                                 }
+
+                                // save boolean
+                                SharedPreferences.Editor editor = sharedPref.edit();
+                                editor.putInt("waitingSMS", 1);
+                                editor.commit();
                             }
                         });
                     } else {
@@ -257,6 +264,11 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                         stepTwoLogin();
                         Log.d("cl.snatch.snatch", "np: " + e.getMessage());
                     }
+
+                    // save boolean
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putInt("waitingSMS", 2);
+                    editor.commit();
                 }
             });
             register.setEnabled(true);
@@ -372,6 +384,11 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
             finish();
         }
 
+        sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt("waitingSMS", 0);
+        editor.commit();
+
         setContentView(R.layout.activity_login);
         ButterKnife.inject(this);
 
@@ -438,7 +455,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                 contact.put("owner", ParseUser.getCurrentUser());
                 contact.put("ownerId", ParseUser.getCurrentUser().getObjectId());
                 contact.saveInBackground();
-                //contact.pinInBackground("myContacts");
+                contact.pinInBackground("myContacts");
             } while (cursor.moveToNext());
         }
 
@@ -459,5 +476,47 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
     @Override
     public Context getContext() {
         return this;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // check if we are waiting for sms
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        // check if we are waiting for sms
+        switch (sharedPref.getInt("waitingSMS", 0)) {
+            case 0:
+            default:
+                break;
+            case 1:
+                verify.setVisibility(View.VISIBLE);
+                findViewById(R.id.pb).setVisibility(View.VISIBLE);
+                findViewById(R.id.contacts).setVisibility(View.VISIBLE);
+                findViewById(R.id.firstName).setVisibility(View.INVISIBLE);
+                findViewById(R.id.lastName).setVisibility(View.INVISIBLE);
+                findViewById(R.id.phone).setVisibility(View.INVISIBLE);
+                findViewById(R.id.code).setVisibility(View.VISIBLE);
+                findViewById(R.id.sms_txt).setVisibility(View.INVISIBLE);
+                findViewById(R.id.avatar).setVisibility(View.INVISIBLE);
+                register.setVisibility(View.INVISIBLE);
+                break;
+            case 2:
+                login.setVisibility(View.VISIBLE);
+                findViewById(R.id.pb).setVisibility(View.VISIBLE);
+                findViewById(R.id.contacts).setVisibility(View.VISIBLE);
+                findViewById(R.id.firstName).setVisibility(View.INVISIBLE);
+                findViewById(R.id.lastName).setVisibility(View.INVISIBLE);
+                findViewById(R.id.phone).setVisibility(View.INVISIBLE);
+                findViewById(R.id.code).setVisibility(View.VISIBLE);
+                findViewById(R.id.sms_txt).setVisibility(View.INVISIBLE);
+                findViewById(R.id.avatar).setVisibility(View.INVISIBLE);
+                register.setVisibility(View.INVISIBLE);
+                break;
+        }
     }
 }

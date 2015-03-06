@@ -63,7 +63,12 @@ public class FriendsFragment extends Fragment {
         list.setAdapter(adapter);
         list.setLayoutManager(layoutManager);
         list.setEmptyView(rootView.findViewById(R.id.empty));
+        return rootView;
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
         // get friend list
         final ArrayList<String> friends =
                 new ArrayList<>(ParseUser.getCurrentUser().getList("friends").size());
@@ -89,10 +94,5 @@ public class FriendsFragment extends Fragment {
                 }
             }
         });
-
-
-
-
-        return rootView;
     }
 }

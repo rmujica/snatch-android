@@ -16,19 +16,23 @@
         android:id="@+id/name"
         android:layout_gravity="center_vertical|left" />
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
+    <ImageView
+        android:clickable="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:src="@drawable/ic_mail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Send SMS"
+        android:contentDescription="Send SMS"
         android:id="@+id/sms"
-        android:layout_gravity="right" />
+        android:layout_gravity="center_vertical|right" />
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
+    <ImageView
+        android:clickable="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:src="@drawable/ic_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Send req."
+        android:contentDescription="Send req."
         android:id="@+id/befriend"
-        android:layout_gravity="right" />
+        android:layout_gravity="center_vertical|right" />
 </LinearLayout>

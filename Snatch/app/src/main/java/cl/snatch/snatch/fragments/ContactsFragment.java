@@ -55,26 +55,9 @@ public class ContactsFragment extends ListFragment implements ContactsLoader.Loa
         ListView list = (ListView) rootView.findViewById(android.R.id.list);
         list.setAdapter(adapter);
 
-        // get contacts
 
-        // todo: save in localdatastore
-        ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
-        getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
-        getContacts.orderByAscending("firstName");
-        getContacts.addDescendingOrder("lastName");
-        //getContacts.fromLocalDatastore();
-        getContacts.findInBackground(new FindCallback<ParseObject>() {
-            @Override
-            public void done(List<ParseObject> parseObjects, ParseException e) {
-                if (e == null) {
-                    adapter.updateContacts(parseObjects);
-                } else {
-                    Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error loading contacts: " + e.getMessage());
-                }
-            }
-        });
 
-        swipe = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe);
+        /*swipe = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe);
         swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -83,9 +66,33 @@ public class ContactsFragment extends ListFragment implements ContactsLoader.Loa
                         null,
                         new ContactsLoader(ContactsFragment.this));
             }
-        });
+        });*/
 
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // get contacts
+
+        // todo: save in localdatastore
+        ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
+        getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
+        getContacts.orderByAscending("firstName");
+        getContacts.addDescendingOrder("lastName");
+        getContacts.fromLocalDatastore();
+        getContacts.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> parseObjects, ParseException e) {
+                if (e == null) {
+                    adapter.updateContacts(parseObjects);
+                    Log.d("cl.snatch.snatch", "catched contacts: " + String.valueOf(parseObjects.size()));
+                } else {
+                    Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error loading contacts: " + e.getMessage());
+                }
+            }
+        });
     }
 
     @Override

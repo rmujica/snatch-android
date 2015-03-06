@@ -161,7 +161,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                     mainSearch.findInBackground(new FindCallback<ParseObject>() {
                         @Override
                         public void done(List<ParseObject> search, ParseException e) {
-                            if (e == null) {
+                            if (e == null && !searchView.isIconified()) {
                                 list.setVisibility(View.VISIBLE);
                                 adapter.replaceContacts(search);
                                 Log.d("cl.snatch.snatch", "result: " + String.valueOf(search.size()));
@@ -224,7 +224,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         super.onResume();
 
         // fetch user
-        ParseUser.getCurrentUser().fetchIfNeededInBackground(new GetCallback<ParseUser>() {
+        ParseUser.getCurrentUser().fetchInBackground(new GetCallback<ParseUser>() {
             @Override
             public void done(ParseUser user, ParseException e) {
                 if (e == null) {

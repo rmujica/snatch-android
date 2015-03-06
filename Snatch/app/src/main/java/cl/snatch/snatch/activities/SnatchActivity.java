@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,6 +41,7 @@ public class SnatchActivity extends ActionBarActivity {
     SnatchingAdapter adapter;
     RecyclerView.LayoutManager layoutManager;
     String userId;
+    View pb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +58,8 @@ public class SnatchActivity extends ActionBarActivity {
         layoutManager = new LinearLayoutManager(this);
         list.setAdapter(adapter);
         list.setLayoutManager(layoutManager);
+
+        pb = findViewById(R.id.progressBar);
 
         // set toobar header
         getSupportActionBar().setTitle("  " + getIntent().getStringExtra("name"));
@@ -162,6 +166,7 @@ public class SnatchActivity extends ActionBarActivity {
         @Override
         public void done(List<ParseObject> contacts, ParseException e) {
             if (e == null) {
+                if (pb.getVisibility() == View.VISIBLE) pb.setVisibility(View.GONE);
                 adapter.addContacts(contacts);
                 if (contacts.size() == 1000) {
                     // load more
