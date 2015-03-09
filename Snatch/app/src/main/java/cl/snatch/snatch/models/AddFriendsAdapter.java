@@ -72,11 +72,11 @@ public class AddFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     }
 
     @Override
-    public void onBindViewHolder(final RecyclerView.ViewHolder preholder, int position) {
+    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
         final ParseObject parseUser = friends.get(position);
 
-        if (getItemViewType(position) == 0) {
-            final ViewHolder holder = (ViewHolder) preholder;
+        /*if (preholder instanceof ViewHolder && getItemViewType(position) == 0 && parseUser.has("phoneNumber")) {
+            final ViewHolder holder = (ViewHolder) preholder;*/
             if (parseUser.has("sms") && !parseUser.getBoolean("sms")) {
                 ParseQuery<ParseObject> hasSent = ParseQuery.getQuery("Friend");
                 hasSent.fromPin("FriendRequests");
@@ -152,11 +152,12 @@ public class AddFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
                 });
             }
 
+
             holder.name.setText(parseUser.getString("fullName"));
-        } else {
+        /*} else {
             HeaderHolder holder = (HeaderHolder) preholder;
             holder.text.setText(parseUser.getString("hdr"));
-        }
+        }*/
     }
 
     @Override

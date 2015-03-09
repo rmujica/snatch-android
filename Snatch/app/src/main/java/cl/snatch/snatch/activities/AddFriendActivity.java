@@ -73,7 +73,6 @@ public class AddFriendActivity extends ActionBarActivity {
             public void done(List<ParseUser> parseUsers, ParseException e) {
                 if (e == null) {
                     adapter.addUsers(parseUsers);
-                    adapter.addSep();
                     ParseQuery<ParseUser> notInSnatch = ParseUser.getQuery();
                     getContacts.whereDoesNotMatchKeyInQuery("phoneNumber", "phoneNumber", notInSnatch);
                     getContacts.orderByAscending("firstName");
@@ -82,6 +81,7 @@ public class AddFriendActivity extends ActionBarActivity {
                         @Override
                         public void done(List<ParseObject> parseObjects, ParseException e) {
                             if (e == null) {
+                                adapter.addSep();
                                 adapter.addFriends(parseObjects);
                                 if (pb.getVisibility() == View.VISIBLE) pb.setVisibility(View.GONE);
                             }

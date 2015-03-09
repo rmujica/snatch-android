@@ -495,6 +495,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                 break;
             case 1:
                 verify.setVisibility(View.VISIBLE);
+                login.setVisibility(View.INVISIBLE);
                 findViewById(R.id.pb).setVisibility(View.VISIBLE);
                 findViewById(R.id.contacts).setVisibility(View.VISIBLE);
                 findViewById(R.id.firstName).setVisibility(View.INVISIBLE);
@@ -507,6 +508,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                 break;
             case 2:
                 login.setVisibility(View.VISIBLE);
+                verify.setVisibility(View.INVISIBLE);
                 findViewById(R.id.pb).setVisibility(View.VISIBLE);
                 findViewById(R.id.contacts).setVisibility(View.VISIBLE);
                 findViewById(R.id.firstName).setVisibility(View.INVISIBLE);
