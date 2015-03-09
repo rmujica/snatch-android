@@ -30,7 +30,7 @@ import cl.snatch.snatch.R;
 import cl.snatch.snatch.activities.SnatchActivity;
 import cl.snatch.snatch.helpers.RoundCornersTransformation;
 
-public class AddFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class AddFriendsAdapter extends RecyclerView.Adapter<AddFriendsAdapter.ViewHolder> {
 
     private List<ParseObject> friends = new ArrayList<>(500); //todo: magic number
     private Context context;
@@ -41,38 +41,38 @@ public class AddFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     }
 
     public void addSep() {
-        ParseUser u = new ParseUser();
+        /*ParseUser u = new ParseUser();
         u.put("hdr", context.getString(R.string.invite_friends_to_jumpster));
         friends.add(u);
         notifyItemInserted(friends.size()-1);
-        separator = friends.size() -1;
+        separator = friends.size() -1;*/
     }
 
     @Override
     public int getItemViewType(int position) {
-        if (position == 0 || position == separator) {
+        /*if (position == 0 || position == separator) {
             return 1;
-        }
+        }*/
         return 0;
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         context = parent.getContext();
         View v;
-        if (viewType == 0) {
+        //if (viewType == 0) {
             v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.detail_add_friend, parent, false);
             return new ViewHolder(v, parent.getContext());
-        } else {
+        /*} else {
             v = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.section, parent, false);
             return new HeaderHolder(v, parent.getContext());
-        }
+        }*/
     }
 
     @Override
-    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         final ParseObject parseUser = friends.get(position);
 
         /*if (preholder instanceof ViewHolder && getItemViewType(position) == 0 && parseUser.has("phoneNumber")) {
@@ -189,12 +189,12 @@ public class AddFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
     public void addUsers(List<ParseUser> friends) {
         int from = this.friends.size();
         int i = 0;
-        if (from == 0 && friends.size() > 0) {
+        /*if (from == 0 && friends.size() > 0) {
             ParseUser u = new ParseUser();
             u.put("hdr", context.getString(R.string.friends_in_jumpster));
             friends.add(u);
             i = 1;
-        }
+        }*/
         for (ParseObject o : friends) {
             o.put("sms", false);
         }
