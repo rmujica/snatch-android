@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.parse.ParseException;
 import com.parse.ParseObject;
+import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,7 +24,7 @@ public class SnatchingAdapter extends RecyclerView.Adapter<SnatchingAdapter.View
 
     // todo: change to set? if it duplicates contacts
     private List<ParseObject> contacts = new ArrayList<>();
-    private Set<ParseObject> checked = new HashSet<>();
+    private HashSet<ParseObject> checked = new HashSet<>();
 
     public SnatchingAdapter() {}
 
@@ -93,6 +94,10 @@ public class SnatchingAdapter extends RecyclerView.Adapter<SnatchingAdapter.View
     }
 
     public Set<ParseObject> getChecked() {
-        return checked;
+        HashSet<ParseObject> ret = new HashSet<>();
+        for (ParseObject o : checked) ret.add(o);
+        checked.clear();
+        this.notifyItemRangeChanged(0, contacts.size()-1);
+        return ret;
     }
 }

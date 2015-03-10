@@ -33,17 +33,18 @@
     <string name="do_login">¿Ya estás registrado?</string>
     <string name="empty_requests">No tienes solicitudes\ndeamistad pendientes.</string>
     <string name="login_existing_account">Login</string>
-    <string name="account">Account</string>
+    <string name="account">Cuenta</string>
     <string name="toc">Términos y Condiciones</string>
     <string name="empty_friends">Aún no tienes amigos.\nPuedes agregar usando el botón en el menú.</string>
     <string name="sms_message">¡Hola! ¡Estoy usando Jumpster y quiero compartir contigo! Descárgala en http://www.jumpsterapp.com</string>
-    <string name="first_name">First Name</string>
     <string name="last_name">Last Name</string>
-    <string name="change_avatar">Change Profile Picture</string>
-    <string name="sync_contacts">Sync Contacts</string>
-    <string name="update">Update Profile</string>
-    <string name="title_activity_account_settings">Account Settings</string>
-    <string name="profile_updated">Profile updated!</string>
+    <string name="change_avatar">Cambiar Foto de Perfil</string>
+    <string name="sync_contacts">Sincronizar Contactos</string>
+    <string name="update">Actualizar Perfil</string>
+    <string name="title_activity_account_settings">Preferencias de la cuenta</string>
     <string name="friends_in_jumpster">Friends in Jumpster</string>
     <string name="invite_friends_to_jumpster">Invite friends to Jumpster</string>
+    <string name="wrong_code">El código de verificación es inválido. Trata de nuevo.</string>
+    <string name="first_name">Nombre</string>
+    <string name="profile_updated">¡Perfil Actualizado!</string>
 </resources>

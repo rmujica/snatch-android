@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.parse.FindCallback;
@@ -158,6 +159,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
             } else {
                 // todo: tell user code doesn't match
                 ParseUser.logOut();
+                Toast.makeText(LoginActivity.this, getString(R.string.wrong_code), Toast.LENGTH_LONG).show();
                 login.setEnabled(true);
                 Log.d("cl.snatch.snatch", "neq: " + String.valueOf(user.getNumber("phoneVerificationCode")) + " " + ((TextView) findViewById(R.id.code)).getText().toString());
             }
@@ -203,6 +205,11 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                                 if (e == null) {
                                     stepTwo();
 
+                                    // save boolean
+                                    SharedPreferences.Editor editor = sharedPref.edit();
+                                    editor.putInt("waitingSMS", 1);
+                                    editor.apply();
+
                                     // upload contacts
                                     getSupportLoaderManager().initLoader(CONTACTS_LOADER_ID,
                                             null,
@@ -219,15 +226,16 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                                         }
                                     });
                                 } else {
-                                    // todo: login user instead
+                                    // save boolean
+                                    SharedPreferences.Editor editor = sharedPref.edit();
+                                    editor.putInt("waitingSMS", 2);
+                                    editor.apply();
+
                                     stepTwoLogin();
                                     Log.d("cl.snatch.snatch", "pp: " + e.getMessage());
                                 }
 
-                                // save boolean
-                                SharedPreferences.Editor editor = sharedPref.edit();
-                                editor.putInt("waitingSMS", 1);
-                                editor.commit();
+
                             }
                         });
                     } else {
@@ -242,6 +250,11 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                 public void done(ParseException e) {
                     if (e == null) {
                         stepTwo();
+
+                        // save boolean
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putInt("waitingSMS", 1);
+                        editor.apply();
 
                         // upload contacts
                         getSupportLoaderManager().initLoader(CONTACTS_LOADER_ID,
@@ -260,15 +273,14 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                             }
                         });
                     } else {
-                        // todo: login user instead
+                        // save boolean
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putInt("waitingSMS", 2);
+                        editor.apply();
+
                         stepTwoLogin();
                         Log.d("cl.snatch.snatch", "np: " + e.getMessage());
                     }
-
-                    // save boolean
-                    SharedPreferences.Editor editor = sharedPref.edit();
-                    editor.putInt("waitingSMS", 2);
-                    editor.commit();
                 }
             });
             register.setEnabled(true);
@@ -363,7 +375,8 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                             }
                         });
                     } else {
-                        // todo: tell user code doesn't match
+                        Toast.makeText(LoginActivity.this, getString(R.string.wrong_code), Toast.LENGTH_LONG).show();
+                        verify.setEnabled(true);
                         Log.d("cl.snatch.snatch", "neq: " + String.valueOf(user.getNumber("phoneVerificationCode")) + " " + ((TextView) findViewById(R.id.code)).getText().toString());
                     }
                 } else {
@@ -385,9 +398,6 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
         }
 
         sharedPref = getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putInt("waitingSMS", 0);
-        editor.commit();
 
         setContentView(R.layout.activity_login);
         ButterKnife.inject(this);

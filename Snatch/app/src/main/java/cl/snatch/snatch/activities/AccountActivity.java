@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.parse.CountCallback;
+import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.FunctionCallback;
 import com.parse.GetCallback;
@@ -48,8 +49,10 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -226,13 +229,103 @@ public class AccountActivity extends ActionBarActivity implements ContactsLoader
     }
 
     @Override
-    public void onLoadFinished(Cursor cursor) {
+    public void onLoadFinished(final Cursor cursor) {
+        final HashSet<String> newNumbers = new HashSet<>();
+        final HashMap<String, String> newContacts = new HashMap<>();
+
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
 
             do {
-                final String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-                final String number = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                String name = cursor
+                        .getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+                String number = cursor
+                        .getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+                        .replaceAll(" ", "");
+
+                newNumbers.add(number);
+                newContacts.put(number, name);
+            } while (cursor.moveToNext());
+        }
+
+        final HashSet<String> oldNumbers = new HashSet<>();
+        final HashMap<String, String> oldContacts = new HashMap<>();
+
+        ParseQuery<ParseObject> oldC = ParseQuery.getQuery("Contact")
+                .whereEqualTo("owner", ParseUser.getCurrentUser())
+                .setLimit(10000);
+        oldC.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> parseObjects, ParseException e) {
+                if (e == null) {
+                    Log.d("cl.snatch.snatch", "found: " + parseObjects.toString());
+                    for (ParseObject o : parseObjects) {
+                        oldNumbers.add(o.getString("phoneNumber"));
+                        oldContacts.put(o.getString("phoneNumber"), o.getString("fullName"));
+                    }
+
+                    oldNumbers.removeAll(newNumbers);
+                    Log.d("cl.snatch.snatch", "toremove: " + String.valueOf(oldNumbers.size()));
+                    Log.d("cl.snatch.snatch", "toremove: " + oldNumbers.toString());
+                    for (String toRemove : oldNumbers) {
+                        ParseQuery.getQuery("Contact")
+                                .whereEqualTo("owner", ParseUser.getCurrentUser())
+                                .whereEqualTo("phoneNumber", toRemove)
+                                .getFirstInBackground(new GetCallback<ParseObject>() {
+                                    @Override
+                                    public void done(final ParseObject parseObject, ParseException e) {
+                                        if (e == null) {
+                                            parseObject.deleteInBackground(new DeleteCallback() {
+                                                @Override
+                                                public void done(ParseException e) {
+                                                    if (e == null) {
+                                                        parseObject.unpinInBackground("myContacts");
+                                                    }
+                                                }
+                                            });
+                                        } else {
+                                            Log.d("cl.snatch.snatch", "error remove: " + e.getMessage());
+                                        }
+                                    }
+                                });
+                    }
+
+                    Log.d("cl.snatch.snatch", "toadd s: " + String.valueOf(oldContacts.keySet().size()) +  " " + String.valueOf(newNumbers.size()));
+
+                    newNumbers.removeAll(oldContacts.keySet());
+                    Log.d("cl.snatch.snatch", "toadd: " + newNumbers.toString());
+                    for (String toAdd : newNumbers) {
+                        ParseObject contact = new ParseObject("Contact");
+                        contact.put("firstName", newContacts.get(toAdd).split(" ")[0]);
+                        try {
+                            contact.put("lastName", newContacts.get(toAdd).split(" ")[1]);
+                        } catch (ArrayIndexOutOfBoundsException xe) {
+                            contact.put("lastName", newContacts.get(toAdd).split(" ")[0]);
+                        }
+                        contact.put("fullName", newContacts.get(toAdd));
+                        contact.put("hidden", false);
+                        contact.put("phoneNumber", toAdd.replaceAll(" ", ""));
+                        contact.put("owner", ParseUser.getCurrentUser());
+                        contact.put("ownerId", ParseUser.getCurrentUser().getObjectId());
+                        contact.saveInBackground();
+                        contact.pinInBackground("myContacts");
+                    }
+
+                    uploadFinished = true;
+                    syncing.setVisibility(View.INVISIBLE);
+                    sync.setEnabled(true);
+                } else {
+                    Log.d("cl.snatch.snatch", "error find: " + e.getMessage());
+                }
+            }
+        });
+
+
+        /*
+
+                        uploadFinished = true;
+                        syncing.setVisibility(View.INVISIBLE);
+                        sync.setEnabled(true);
 
                 ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
                 getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
@@ -260,17 +353,12 @@ public class AccountActivity extends ActionBarActivity implements ContactsLoader
                             contact.pinInBackground("myContacts");
                         } else {
                             if (e != null) Log.d("cl.snatch.snatch", "count error: " + e.getMessage());
+                            else Log.d("cl.snatch.snatch", "count is: " + String.valueOf(i));
                         }
                     }
-                });
+                });*/
 
-                //contact.pinInBackground("myContacts");
-            } while (cursor.moveToNext());
-        }
-
-        uploadFinished = true;
-        syncing.setVisibility(View.INVISIBLE);
-        sync.setEnabled(true);
+        //contact.pinInBackground("myContacts");
     }
 
     @Override

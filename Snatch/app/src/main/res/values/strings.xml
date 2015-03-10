@@ -53,5 +53,6 @@
     <string name="profile_updated">Profile updated!</string>
     <string name="friends_in_jumpster">Friends in Jumpster</string>
     <string name="invite_friends_to_jumpster">Invite friends to Jumpster</string>
+    <string name="wrong_code">Your verification code is incorrect. Please try again.</string>
 
 </resources>
