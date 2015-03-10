@@ -32,7 +32,7 @@ import cl.snatch.snatch.models.ContactsLoader;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ContactsFragment extends ListFragment implements ContactsLoader.LoadFinishedCallback {
+public class ContactsFragment extends ListFragment {
 
     ContactsAdapter adapter = new ContactsAdapter();
     private SwipeRefreshLayout swipe;
@@ -95,52 +95,4 @@ public class ContactsFragment extends ListFragment implements ContactsLoader.Loa
         });
     }
 
-    @Override
-    public void onLoadFinished(Cursor cursor) {
-        if (cursor.getCount() > 0) {
-            cursor.moveToFirst();
-
-            do {
-                final String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-                final String number = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-
-                // upload to parse if new
-                final ParseQuery<ParseObject> isNew = ParseQuery.getQuery("Contact");
-                //isNew.fromPin("myContacts");
-                isNew.whereEqualTo("phoneNumber", number.replaceAll(" ", ""));
-                isNew.whereEqualTo("owner", ParseUser.getCurrentUser());
-                isNew.getFirstInBackground(new GetCallback<ParseObject>() {
-                    @Override
-                    public void done(ParseObject parseObject, ParseException e) {
-                        if (parseObject == null) {
-                            Log.d("cl.snatch.snatch", "agregando " + name);
-                            ParseObject contact = new ParseObject("Contact");
-                            contact.put("firstName", name.split(" ")[0]);
-                            try {
-                                contact.put("lastName", name.split(" ")[1]);
-                            } catch (ArrayIndexOutOfBoundsException er) {
-                                contact.put("lastName", name.split(" ")[0]);
-                            }
-                            contact.put("fullName", name);
-                            contact.put("hidden", false);
-                            contact.put("phoneNumber", number.replaceAll(" ", ""));
-                            contact.put("owner", ParseUser.getCurrentUser());
-                            contact.put("ownerId", ParseUser.getCurrentUser().getObjectId());
-                            contact.saveInBackground();
-                            adapter.addContact(contact);
-                        } else {
-                            Log.d("cl.snatch.snatch", "exists: " + parseObject.getString("fullName") + " " + parseObject.getString("owner") + " " + parseObject.getString("phoneNumber"));
-                        }
-                    }
-                });
-            } while (cursor.moveToNext());
-        }
-
-        swipe.setRefreshing(false);
-    }
-
-    @Override
-    public Context getContext() {
-        return getActivity();
-    }
 }

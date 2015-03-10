@@ -68,6 +68,7 @@ public class PushOpenReceiver extends ParsePushBroadcastReceiver {
         } catch (JSONException ex) {
             ex.printStackTrace();
         }
+        //super.onPushReceive(context, intent);
     }
 
 }

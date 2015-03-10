@@ -120,7 +120,7 @@ public class AccountActivity extends ActionBarActivity implements ContactsLoader
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                 avatarBitmap.compress(Bitmap.CompressFormat.JPEG, 75, stream);
                 byte[] bitmapByte = stream.toByteArray();
-                final ParseFile avatar = new ParseFile(((TextView) findViewById(R.id.phone)).getText().toString().substring(1)+".jpg", bitmapByte);
+                final ParseFile avatar = new ParseFile(ParseUser.getCurrentUser().getString("phoneNumber")+".jpg", bitmapByte);
                 avatar.saveInBackground(new SaveCallback() {
                     @Override
                     public void done(ParseException e) {
@@ -237,10 +237,12 @@ public class AccountActivity extends ActionBarActivity implements ContactsLoader
                 ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
                 getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
                 getContacts.whereEqualTo("phoneNumber", number.replaceAll(" ", ""));
+                Log.d("cl.snatch.snatch", "count query: " + getContacts.toString());
                 getContacts.countInBackground(new CountCallback() {
                     @Override
                     public void done(int i, ParseException e) {
                         if (e == null && i == 0) {
+                            Log.d("cl.snatch.snatch", "count: " + String.valueOf(i));
                             // upload to parse
                             ParseObject contact = new ParseObject("Contact");
                             contact.put("firstName", name.split(" ")[0]);
@@ -256,6 +258,8 @@ public class AccountActivity extends ActionBarActivity implements ContactsLoader
                             contact.put("ownerId", ParseUser.getCurrentUser().getObjectId());
                             contact.saveInBackground();
                             contact.pinInBackground("myContacts");
+                        } else {
+                            if (e != null) Log.d("cl.snatch.snatch", "count error: " + e.getMessage());
                         }
                     }
                 });
