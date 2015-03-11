@@ -98,6 +98,7 @@ public class SnatchActivity extends ActionBarActivity {
         contactsQuery.whereEqualTo("ownerId", userId);
         contactsQuery.orderByAscending("firstName");
         contactsQuery.addAscendingOrder("lastName");
+        contactsQuery.whereEqualTo("hidden", false);
         contactsQuery.findInBackground(new FindContacts());
     }
 
@@ -229,6 +230,9 @@ public class SnatchActivity extends ActionBarActivity {
                     ParseQuery<ParseObject> contactsQuery = ParseQuery.getQuery("Contacts");
                     contactsQuery.setLimit(1000);
                     contactsQuery.whereEqualTo("ownerId", userId);
+                    contactsQuery.orderByAscending("firstName");
+                    contactsQuery.addAscendingOrder("lastName");
+                    contactsQuery.whereEqualTo("hidden", false);
                     contactsQuery.findInBackground(new FindContacts());
                 }
             }

@@ -80,11 +80,11 @@ public class AddFriendsAdapter extends RecyclerView.Adapter<AddFriendsAdapter.Vi
             if (parseUser.has("sms") && !parseUser.getBoolean("sms")) {
                 ParseQuery<ParseObject> hasSent = ParseQuery.getQuery("Friend");
                 hasSent.fromPin("FriendRequests");
-                hasSent.whereEqualTo("toNumber", parseUser.getString("phoneNumber").replaceAll(" ", ""));
+                hasSent.whereEqualTo("to", parseUser.getObjectId());
                 hasSent.getFirstInBackground(new GetCallback<ParseObject>() {
                     @Override
                     public void done(ParseObject parseObject, ParseException e) {
-                        if (parseObject != null) {
+                        if (parseObject != null && parseObject.getString("status").equals("pending")) {
                             // request sent
                             holder.befriend.setEnabled(false);
                             //holder.befriend.setText("Req. sent");
@@ -94,6 +94,7 @@ public class AddFriendsAdapter extends RecyclerView.Adapter<AddFriendsAdapter.Vi
                         } else {
                             holder.befriend.setVisibility(View.VISIBLE);
                             holder.sms.setVisibility(View.GONE);
+                            holder.befriend.setImageResource(R.drawable.ic_add);
                             holder.befriend.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
@@ -105,15 +106,29 @@ public class AddFriendsAdapter extends RecyclerView.Adapter<AddFriendsAdapter.Vi
                                     befriend.whereEqualTo("phoneNumber", parseUser.getString("phoneNumber").replaceAll(" ", ""));
                                     befriend.getFirstInBackground(new GetCallback<ParseUser>() {
                                         @Override
-                                        public void done(ParseUser p, ParseException e) {
+                                        public void done(final ParseUser p, ParseException e) {
                                             if (e == null) {
-                                                ParseObject request = new ParseObject("Friend");
-                                                request.put("from", ParseUser.getCurrentUser().getObjectId());
-                                                request.put("to", p.getObjectId());
-                                                request.put("status", "pending");
-                                                request.saveInBackground();
-                                                request.put("toNumber", p.getString("phoneNumber"));
-                                                request.pinInBackground("FriendRequests");
+                                                ParseQuery<ParseObject> r = ParseQuery.getQuery("Friend");
+                                                r.whereEqualTo("from", ParseUser.getCurrentUser().getObjectId());
+                                                r.whereEqualTo("to", p.getObjectId());
+                                                r.getFirstInBackground(new GetCallback<ParseObject>() {
+                                                    @Override
+                                                    public void done(ParseObject parseObject, ParseException e) {
+                                                        if (e == null) {
+                                                            parseObject.put("status", "pending");
+                                                            parseObject.saveInBackground();
+                                                            parseObject.pinInBackground("FriendRequests");
+                                                        } else {
+                                                            ParseObject request = new ParseObject("Friend");
+                                                            request.put("from", ParseUser.getCurrentUser().getObjectId());
+                                                            request.put("to", p.getObjectId());
+                                                            request.put("status", "pending");
+                                                            request.saveInBackground();
+                                                            request.pinInBackground("FriendRequests");
+                                                        }
+                                                    }
+                                                });
+
                                             } else {
                                                 Log.d("cl.snatch.snatch", "error: " + e.getMessage());
                                             }

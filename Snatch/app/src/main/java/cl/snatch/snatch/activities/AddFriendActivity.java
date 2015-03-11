@@ -14,12 +14,14 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.parse.CountCallback;
+import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -56,34 +58,93 @@ public class AddFriendActivity extends ActionBarActivity {
 
         pb = findViewById(R.id.progressBar);
 
-        final ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
-        getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
-        getContacts.setLimit(1000);
 
-        ParseQuery<ParseUser> isInSnatch = ParseUser.getQuery();
-        isInSnatch.whereMatchesKeyInQuery("phoneNumber", "phoneNumber", getContacts);
-        Log.d("cl.snatch.snatch", "friends: " + ParseUser.getCurrentUser().getList("friends").toString());
-        isInSnatch.whereNotContainedIn("objectId", ParseUser.getCurrentUser().getList("friends"));
-        isInSnatch.whereNotEqualTo("objectId", ParseUser.getCurrentUser().getObjectId());
-        isInSnatch.orderByAscending("firstName");
-        isInSnatch.addAscendingOrder("lastName");
-        isInSnatch.setLimit(1000);
-        isInSnatch.findInBackground(new FindCallback<ParseUser>() {
+        // get friend object
+        ParseQuery<ParseObject> myRequests = ParseQuery.getQuery("Friend");
+        myRequests.whereEqualTo("from", ParseUser.getCurrentUser().getObjectId());
+        myRequests.findInBackground(new FindCallback<ParseObject>() {
             @Override
-            public void done(List<ParseUser> parseUsers, ParseException e) {
+            public void done(final List<ParseObject> o, ParseException e) {
                 if (e == null) {
-                    adapter.addUsers(parseUsers);
-                    ParseQuery<ParseUser> notInSnatch = ParseUser.getQuery();
-                    getContacts.whereDoesNotMatchKeyInQuery("phoneNumber", "phoneNumber", notInSnatch);
-                    getContacts.orderByAscending("firstName");
-                    getContacts.addAscendingOrder("lastName");
-                    getContacts.findInBackground(new FindCallback<ParseObject>() {
+                    ParseObject.unpinAllInBackground("FriendRequests", new DeleteCallback() {
                         @Override
-                        public void done(List<ParseObject> parseObjects, ParseException e) {
+                        public void done(ParseException e) {
+                            ParseObject.pinAllInBackground("FriendRequests", o, new SaveCallback() {
+                                @Override
+                                public void done(ParseException e) {
+
+                                    final ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
+                                    getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
+                                    getContacts.setLimit(1000);
+
+                                    ParseQuery<ParseUser> isInSnatch = ParseUser.getQuery();
+                                    isInSnatch.whereMatchesKeyInQuery("phoneNumber", "phoneNumber", getContacts);
+                                    Log.d("cl.snatch.snatch", "friends: " + ParseUser.getCurrentUser().getList("friends").toString());
+                                    isInSnatch.whereNotContainedIn("objectId", ParseUser.getCurrentUser().getList("friends"));
+                                    isInSnatch.whereNotEqualTo("objectId", ParseUser.getCurrentUser().getObjectId());
+                                    isInSnatch.orderByAscending("firstName");
+                                    isInSnatch.addAscendingOrder("lastName");
+                                    isInSnatch.setLimit(1000);
+                                    isInSnatch.findInBackground(new FindCallback<ParseUser>() {
+                                        @Override
+                                        public void done(List<ParseUser> parseUsers, ParseException e) {
+                                            if (e == null) {
+                                                adapter.addUsers(parseUsers);
+                                                ParseQuery<ParseUser> notInSnatch = ParseUser.getQuery();
+                                                getContacts.whereDoesNotMatchKeyInQuery("phoneNumber", "phoneNumber", notInSnatch);
+                                                getContacts.orderByAscending("firstName");
+                                                getContacts.addAscendingOrder("lastName");
+                                                getContacts.findInBackground(new FindCallback<ParseObject>() {
+                                                    @Override
+                                                    public void done(List<ParseObject> parseObjects, ParseException e) {
+                                                        if (e == null) {
+                                                            adapter.addSep();
+                                                            adapter.addFriends(parseObjects);
+                                                            if (pb.getVisibility() == View.VISIBLE)
+                                                                pb.setVisibility(View.GONE);
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    final ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
+                    getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
+                    getContacts.setLimit(1000);
+
+                    ParseQuery<ParseUser> isInSnatch = ParseUser.getQuery();
+                    isInSnatch.whereMatchesKeyInQuery("phoneNumber", "phoneNumber", getContacts);
+                    Log.d("cl.snatch.snatch", "friends: " + ParseUser.getCurrentUser().getList("friends").toString());
+                    isInSnatch.whereNotContainedIn("objectId", ParseUser.getCurrentUser().getList("friends"));
+                    isInSnatch.whereNotEqualTo("objectId", ParseUser.getCurrentUser().getObjectId());
+                    isInSnatch.orderByAscending("firstName");
+                    isInSnatch.addAscendingOrder("lastName");
+                    isInSnatch.setLimit(1000);
+                    isInSnatch.findInBackground(new FindCallback<ParseUser>() {
+                        @Override
+                        public void done(List<ParseUser> parseUsers, ParseException e) {
                             if (e == null) {
-                                adapter.addSep();
-                                adapter.addFriends(parseObjects);
-                                if (pb.getVisibility() == View.VISIBLE) pb.setVisibility(View.GONE);
+                                adapter.addUsers(parseUsers);
+                                ParseQuery<ParseUser> notInSnatch = ParseUser.getQuery();
+                                getContacts.whereDoesNotMatchKeyInQuery("phoneNumber", "phoneNumber", notInSnatch);
+                                getContacts.orderByAscending("firstName");
+                                getContacts.addAscendingOrder("lastName");
+                                getContacts.findInBackground(new FindCallback<ParseObject>() {
+                                    @Override
+                                    public void done(List<ParseObject> parseObjects, ParseException e) {
+                                        if (e == null) {
+                                            adapter.addSep();
+                                            adapter.addFriends(parseObjects);
+                                            if (pb.getVisibility() == View.VISIBLE)
+                                                pb.setVisibility(View.GONE);
+                                        }
+                                    }
+                                });
                             }
                         }
                     });
