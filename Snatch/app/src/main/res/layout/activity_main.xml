@@ -30,7 +30,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <android.support.v7.widget.RecyclerView
+    <cl.snatch.snatch.helpers.EmptyRecyclerView
         android:elevation="2dp"
         android:layout_below="@id/actionbar"
         android:background="@android:color/white"
@@ -39,5 +39,16 @@
         android:scrollbars="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/pb"
+        android:visibility="invisible"
+        android:layout_below="@+id/sliding_tabs"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"
+        android:indeterminate="true" />
 
 </RelativeLayout>

@@ -82,6 +82,7 @@ public class ContactsFragment extends ListFragment {
         getContacts.orderByAscending("firstName");
         getContacts.addDescendingOrder("lastName");
         getContacts.fromLocalDatastore();
+        //getContacts.fromPin("myContacts");
         getContacts.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> parseObjects, ParseException e) {

@@ -31,7 +31,7 @@
     <string name="title_activity_snatch">Obtener</string>
     <string name="search">Buscar</string>
     <string name="do_login">¿Ya estás registrado?</string>
-    <string name="empty_requests">No tienes solicitudes\ndeamistad pendientes.</string>
+    <string name="empty_requests">No tienes solicitudes\nde amistad pendientes.</string>
     <string name="login_existing_account">Login</string>
     <string name="account">Cuenta</string>
     <string name="toc">Términos y Condiciones</string>
@@ -47,4 +47,8 @@
     <string name="wrong_code">El código de verificación es inválido. Trata de nuevo.</string>
     <string name="first_name">Nombre</string>
     <string name="profile_updated">¡Perfil Actualizado!</string>
+    <string name="contacts_synced">¡Contactos Actualizados!</string>
+    <string name="empty_search">No results.</string>
+    <string name="delete_friend">Unfriend</string>
+    <string name="unfriended">"You are no longer friends with "</string>
 </resources>

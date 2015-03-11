@@ -1,5 +1,6 @@
 package cl.snatch.snatch.activities;
 
+import android.accounts.Account;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -123,7 +124,7 @@ public class AccountActivity extends ActionBarActivity implements ContactsLoader
                 ByteArrayOutputStream stream = new ByteArrayOutputStream();
                 avatarBitmap.compress(Bitmap.CompressFormat.JPEG, 75, stream);
                 byte[] bitmapByte = stream.toByteArray();
-                final ParseFile avatar = new ParseFile(ParseUser.getCurrentUser().getString("phoneNumber")+".jpg", bitmapByte);
+                final ParseFile avatar = new ParseFile(ParseUser.getCurrentUser().getString("phoneNumber").replace("+", "")+".jpg", bitmapByte);
                 avatar.saveInBackground(new SaveCallback() {
                     @Override
                     public void done(ParseException e) {
@@ -138,6 +139,8 @@ public class AccountActivity extends ActionBarActivity implements ContactsLoader
                                     Toast.makeText(AccountActivity.this, getString(R.string.profile_updated), Toast.LENGTH_LONG).show();
                                 }
                             });
+                        } else {
+                            Log.d("cl.snatch.snatch", "update error: " + e.getMessage());
                         }
                     }
                 });
@@ -148,8 +151,12 @@ public class AccountActivity extends ActionBarActivity implements ContactsLoader
             u.saveInBackground(new SaveCallback() {
                 @Override
                 public void done(ParseException e) {
-                    update.setEnabled(true);
-                    Toast.makeText(AccountActivity.this, getString(R.string.profile_updated), Toast.LENGTH_LONG).show();
+                    if (e == null) {
+                        update.setEnabled(true);
+                        Toast.makeText(AccountActivity.this, getString(R.string.profile_updated), Toast.LENGTH_LONG).show();
+                    } else {
+                            Log.d("cl.snatch.snatch", "update error: " + e.getMessage());
+                    }
                 }
             });
         }
@@ -314,51 +321,12 @@ public class AccountActivity extends ActionBarActivity implements ContactsLoader
                     uploadFinished = true;
                     syncing.setVisibility(View.INVISIBLE);
                     sync.setEnabled(true);
+                    Toast.makeText(AccountActivity.this, getString(R.string.contacts_synced), Toast.LENGTH_SHORT).show();
                 } else {
                     Log.d("cl.snatch.snatch", "error find: " + e.getMessage());
                 }
             }
         });
-
-
-        /*
-
-                        uploadFinished = true;
-                        syncing.setVisibility(View.INVISIBLE);
-                        sync.setEnabled(true);
-
-                ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
-                getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
-                getContacts.whereEqualTo("phoneNumber", number.replaceAll(" ", ""));
-                Log.d("cl.snatch.snatch", "count query: " + getContacts.toString());
-                getContacts.countInBackground(new CountCallback() {
-                    @Override
-                    public void done(int i, ParseException e) {
-                        if (e == null && i == 0) {
-                            Log.d("cl.snatch.snatch", "count: " + String.valueOf(i));
-                            // upload to parse
-                            ParseObject contact = new ParseObject("Contact");
-                            contact.put("firstName", name.split(" ")[0]);
-                            try {
-                                contact.put("lastName", name.split(" ")[1]);
-                            } catch (ArrayIndexOutOfBoundsException xe) {
-                                contact.put("lastName", name.split(" ")[0]);
-                            }
-                            contact.put("fullName", name);
-                            contact.put("hidden", false);
-                            contact.put("phoneNumber", number.replaceAll(" ", ""));
-                            contact.put("owner", ParseUser.getCurrentUser());
-                            contact.put("ownerId", ParseUser.getCurrentUser().getObjectId());
-                            contact.saveInBackground();
-                            contact.pinInBackground("myContacts");
-                        } else {
-                            if (e != null) Log.d("cl.snatch.snatch", "count error: " + e.getMessage());
-                            else Log.d("cl.snatch.snatch", "count is: " + String.valueOf(i));
-                        }
-                    }
-                });*/
-
-        //contact.pinInBackground("myContacts");
     }
 
     @Override

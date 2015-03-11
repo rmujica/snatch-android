@@ -17,8 +17,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.parse.DeleteCallback;
 import com.parse.FindCallback;
 import com.parse.GetCallback;
+import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
@@ -119,6 +121,50 @@ public class SnatchActivity extends ActionBarActivity {
             for (ParseObject user : checked) addUserToPhonebook(user);
             Toast.makeText(this, getResources().getString(R.string.contacts_snatched), Toast.LENGTH_SHORT).show();
             return true;
+        } else if (id == R.id.action_unfriend) {
+            // unfriend
+            ParseQuery<ParseObject> meToFriend = ParseQuery.getQuery("Friend");
+            meToFriend.whereEqualTo("from", ParseUser.getCurrentUser().getObjectId());
+            meToFriend.whereEqualTo("to", userId);
+            meToFriend.whereEqualTo("status", "accepted");
+
+            ParseQuery<ParseObject> friendToMe = ParseQuery.getQuery("Friend");
+            friendToMe.whereEqualTo("to", ParseUser.getCurrentUser().getObjectId());
+            friendToMe.whereEqualTo("from", userId);
+            friendToMe.whereEqualTo("status", "accepted");
+
+            List<ParseQuery<ParseObject>> q = new ArrayList<>();
+            q.add(meToFriend);
+            q.add(friendToMe);
+
+            ParseQuery<ParseObject> unfriend = ParseQuery.or(q);
+            unfriend.findInBackground(new FindCallback<ParseObject>() {
+                @Override
+                public void done(List<ParseObject> parseObjects, ParseException e) {
+                    if (e == null) {
+                        for (ParseObject f : parseObjects) {
+                            f.deleteInBackground();
+                        }
+
+                        ParseQuery<ParseUser> exFriend = ParseUser.getQuery();
+                        exFriend.getInBackground(userId, new GetCallback<ParseUser>() {
+                            @Override
+                            public void done(ParseUser parseUser, ParseException e) {
+                                if (e == null) {
+                                    parseUser.unpinInBackground(new DeleteCallback() {
+                                        @Override
+                                        public void done(ParseException e) {
+                                            if (e == null) {
+                                                Toast.makeText(SnatchActivity.this, getString(R.string.unfriended) + getIntent().getStringExtra("name") + ".", Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
+                }
+            });
         }
 
         return super.onOptionsItemSelected(item);

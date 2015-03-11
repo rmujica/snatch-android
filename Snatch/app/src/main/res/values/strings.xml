@@ -54,5 +54,9 @@
     <string name="friends_in_jumpster">Friends in Jumpster</string>
     <string name="invite_friends_to_jumpster">Invite friends to Jumpster</string>
     <string name="wrong_code">Your verification code is incorrect. Please try again.</string>
+    <string name="contacts_synced">Contacts synced!</string>
+    <string name="empty_search">No results.</string>
+    <string name="delete_friend">Unfriend</string>
+    <string name="unfriended">"You are no longer friends with "</string>
 
 </resources>

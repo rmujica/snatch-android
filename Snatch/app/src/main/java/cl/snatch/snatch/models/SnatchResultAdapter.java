@@ -45,17 +45,14 @@ public class SnatchResultAdapter extends RecyclerView.Adapter<SnatchResultAdapte
 
     @Override
     public void onBindViewHolder(final SnatchResultAdapter.ViewHolder holder, final int position) {
-        final ParseObject user;
-        try {
-            user = contacts.get(position).fetchIfNeeded();
-            final ParseObject owner = user.getParseUser("owner").fetchIfNeeded();
-
-            holder.name.setText(user.getString("fullName"));
-            holder.numbers.setText(user.getString("phoneNumber") + " (" + owner.getString("fullName") + ")");
+        if (contacts.get(position).has("address")) {
+            final ParseObject comm = contacts.get(position);
+            holder.name.setText(comm.getString("name"));
+            holder.numbers.setText(comm.getString("phoneNumber"));
             holder.snatch.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    addUserToPhonebook(user);
+                    addCommToPhonebook(comm);
                     Toast.makeText(context, context.getResources().getString(R.string.contacts_snatched), Toast.LENGTH_SHORT).show();
                 }
             });
@@ -63,12 +60,36 @@ public class SnatchResultAdapter extends RecyclerView.Adapter<SnatchResultAdapte
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(Intent.ACTION_CALL);
-                    intent.setData(Uri.parse("tel:" + user.getString("phoneNumber")));
+                    intent.setData(Uri.parse("tel:" + comm.getString("phoneNumber")));
                     context.startActivity(intent);
                 }
             });
-        } catch (ParseException e) {
-            e.printStackTrace();
+        } else {
+            final ParseObject user;
+            try {
+                user = contacts.get(position).fetchIfNeeded();
+                final ParseObject owner = user.getParseUser("owner").fetchIfNeeded();
+
+                holder.name.setText(user.getString("fullName"));
+                holder.numbers.setText(user.getString("phoneNumber") + " (" + owner.getString("fullName") + ")");
+                holder.snatch.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        addUserToPhonebook(user);
+                        Toast.makeText(context, context.getResources().getString(R.string.contacts_snatched), Toast.LENGTH_SHORT).show();
+                    }
+                });
+                holder.call.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(Intent.ACTION_CALL);
+                        intent.setData(Uri.parse("tel:" + user.getString("phoneNumber")));
+                        context.startActivity(intent);
+                    }
+                });
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -112,6 +133,41 @@ public class SnatchResultAdapter extends RecyclerView.Adapter<SnatchResultAdapte
         }
     }
 
+    private void addCommToPhonebook(ParseObject comm) {
+        // create new contact using object
+        ArrayList<ContentProviderOperation> ops = new ArrayList<>();
+        ops.add(ContentProviderOperation
+                .newInsert(ContactsContract.RawContacts.CONTENT_URI)
+                .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null)
+                .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null)
+                .build());
+
+        ops.add(ContentProviderOperation
+                .newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                .withValue(
+                        ContactsContract.Data.MIMETYPE,
+                        ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+                .withValue(
+                        ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME,
+                        comm.getString("name")).build());
+
+        ops.add(ContentProviderOperation
+                .newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                .withValue(
+                        ContactsContract.Data.MIMETYPE,
+                        ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER,
+                        comm.getString("phoneNumber"))
+                .withValue(ContactsContract.CommonDataKinds.Phone.TYPE,
+                        ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE).build());
+        try {
+            context.getApplicationContext().getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private void addUserToPhonebook(ParseObject user) {
         // create new contact using object

@@ -28,6 +28,8 @@ public class ContactsAdapter extends BaseAdapter implements SectionIndexer {
     private HashMap<String, Integer> mapIndex = new HashMap<>();
 
     public void updateContacts(List<ParseObject> contacts) {
+        this.contacts.clear();
+        this.mapIndex.clear();
         this.contacts.addAll(contacts);
 
         for (int i = 0; i < contacts.size(); i++) {

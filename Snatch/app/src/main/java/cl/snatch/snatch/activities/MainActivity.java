@@ -1,6 +1,8 @@
 package cl.snatch.snatch.activities;
 
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.FragmentTransaction;
@@ -33,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 import cl.snatch.snatch.R;
+import cl.snatch.snatch.helpers.EmptyRecyclerView;
 import cl.snatch.snatch.helpers.SlidingTabLayout;
 import cl.snatch.snatch.models.SectionsPagerAdapter;
 import cl.snatch.snatch.models.SnatchResultAdapter;
@@ -51,9 +54,12 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     SectionsPagerAdapter mSectionsPagerAdapter;
     SlidingTabLayout mSlidingTabLayout;
 
-    RecyclerView list;
+    EmptyRecyclerView list;
     SnatchResultAdapter adapter;
     RecyclerView.LayoutManager layoutManager;
+    String lastSearch = "";
+    Handler changeHandler;
+    View pb;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -65,6 +71,9 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        changeHandler = new Handler();
+        pb = findViewById(R.id.pb);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.actionbar);
         toolbar.setTitle(R.string.app_name);
@@ -90,7 +99,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         });
         toolbar.inflateMenu(R.menu.menu_main);
         adapter = new SnatchResultAdapter();
-        list = (RecyclerView) findViewById(R.id.list);
+        list = (EmptyRecyclerView) findViewById(R.id.list);
         list.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         list.setAdapter(adapter);
@@ -114,62 +123,99 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                 }
 
                 @Override
-                public boolean onQueryTextChange(String s) {
-                    if (s.isEmpty()) {
+                public boolean onQueryTextChange(final String s) {
+                    if (s.isEmpty() || s.equals("@")) {
+                        lastSearch = "";
+                        changeHandler.removeCallbacksAndMessages(null);
                         adapter.replaceContacts(new ArrayList<ParseObject>());
                         list.setVisibility(View.GONE);
                         return false;
                     }
-                    JSONArray jFriends = ParseUser.getCurrentUser().getJSONArray("friends");
-                    Set<String> friends = new HashSet<>(jFriends.length());
-                    for (int i = 0; i < jFriends.length(); i++) {
-                        try {
-                            friends.add(jFriends.getString(i));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+
+                    list.setVisibility(View.VISIBLE);
+                    list.setEmptyView(pb);
+                    Log.d("cl.snatch.snatch", "strs: " + lastSearch + " " + s);
+
+                    if (!lastSearch.equals(s)) {
+                        changeHandler.removeCallbacksAndMessages(null);
+                    } else {
+                        return false;
                     }
-
-                    ParseQuery<ParseObject> searchFirstNameL = ParseQuery.getQuery("Contact");
-                    searchFirstNameL.whereStartsWith("firstName", s.toLowerCase());
-                    ParseQuery<ParseObject> searchFirstNameU = ParseQuery.getQuery("Contact");
-                    searchFirstNameU.whereStartsWith("firstName", s.toUpperCase());
-                    ParseQuery<ParseObject> searchFirstNameF = ParseQuery.getQuery("Contact");
-                    ParseQuery<ParseObject> searchLastNameF = ParseQuery.getQuery("Contact");
-                    try {
-                        searchFirstNameF.whereStartsWith("firstName", s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase());
-                        searchLastNameF.whereStartsWith("lastName", s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase());
-                    } catch (StringIndexOutOfBoundsException e) {
-                        searchFirstNameF.whereStartsWith("firstName", s);
-                        searchLastNameF.whereStartsWith("lastName", s);
-                    }
-                    ParseQuery<ParseObject> searchLastNameL = ParseQuery.getQuery("Contact");
-                    searchLastNameL.whereStartsWith("lastName", s.toLowerCase());
-                    ParseQuery<ParseObject> searchLastNameU = ParseQuery.getQuery("Contact");
-                    searchLastNameU.whereStartsWith("lastName", s.toUpperCase());
-
-                    ArrayList<ParseQuery<ParseObject>> search = new ArrayList<>();
-                    search.add(searchFirstNameL);
-                    search.add(searchFirstNameU);
-                    search.add(searchFirstNameF);
-                    search.add(searchLastNameL);
-                    search.add(searchLastNameU);
-                    search.add(searchLastNameF);
-
-                    ParseQuery<ParseObject> mainSearch = ParseQuery.or(search);
-                    mainSearch.whereContainedIn("ownerId", friends);
-                    mainSearch.findInBackground(new FindCallback<ParseObject>() {
+                    lastSearch = s;
+                    Log.d("cl.snatch.snatch", "delaying");
+                    changeHandler.postDelayed(new Runnable() {
                         @Override
-                        public void done(List<ParseObject> search, ParseException e) {
-                            if (e == null && !searchView.isIconified()) {
-                                list.setVisibility(View.VISIBLE);
-                                adapter.replaceContacts(search);
-                                Log.d("cl.snatch.snatch", "result: " + String.valueOf(search.size()));
+                        public void run() {
+                            Log.d("cl.snatch.snatch", "running delayed");
+
+                            if (s.startsWith("@") && s.length() > 1) {
+                                // commercial search
+                                ParseQuery<ParseObject> search = ParseQuery.getQuery("Commercial");
+                                search.whereContains("name", s.substring(1));
+                                search.findInBackground(new FindCallback<ParseObject>() {
+                                    @Override
+                                    public void done(List<ParseObject> search, ParseException e) {
+                                        if (e == null && !searchView.isIconified()) {
+                                            adapter.replaceContacts(search);
+                                        }
+                                    }
+                                });
                             } else {
-                                Log.d("cl.snatch.snatch", "error: " + e.getMessage());
+                                // normal search
+                                JSONArray jFriends = ParseUser.getCurrentUser().getJSONArray("friends");
+                                Set<String> friends = new HashSet<>(jFriends.length());
+                                for (int i = 0; i < jFriends.length(); i++) {
+                                    try {
+                                        friends.add(jFriends.getString(i));
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                ParseQuery<ParseObject> searchFirstNameL = ParseQuery.getQuery("Contact");
+                                searchFirstNameL.whereStartsWith("firstName", s.toLowerCase());
+                                ParseQuery<ParseObject> searchFirstNameU = ParseQuery.getQuery("Contact");
+                                searchFirstNameU.whereStartsWith("firstName", s.toUpperCase());
+                                ParseQuery<ParseObject> searchFirstNameF = ParseQuery.getQuery("Contact");
+                                ParseQuery<ParseObject> searchLastNameF = ParseQuery.getQuery("Contact");
+                                try {
+                                    searchFirstNameF.whereStartsWith("firstName", s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase());
+                                    searchLastNameF.whereStartsWith("lastName", s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase());
+                                } catch (StringIndexOutOfBoundsException e) {
+                                    searchFirstNameF.whereStartsWith("firstName", s);
+                                    searchLastNameF.whereStartsWith("lastName", s);
+                                }
+                                ParseQuery<ParseObject> searchLastNameL = ParseQuery.getQuery("Contact");
+                                searchLastNameL.whereStartsWith("lastName", s.toLowerCase());
+                                ParseQuery<ParseObject> searchLastNameU = ParseQuery.getQuery("Contact");
+                                searchLastNameU.whereStartsWith("lastName", s.toUpperCase());
+
+                                ArrayList<ParseQuery<ParseObject>> search = new ArrayList<>();
+                                search.add(searchFirstNameL);
+                                search.add(searchFirstNameU);
+                                search.add(searchFirstNameF);
+                                search.add(searchLastNameL);
+                                search.add(searchLastNameU);
+                                search.add(searchLastNameF);
+
+                                ParseQuery<ParseObject> mainSearch = ParseQuery.or(search);
+                                mainSearch.whereContainedIn("ownerId", friends);
+                                mainSearch.whereEqualTo("hidden", false);
+                                mainSearch.findInBackground(new FindCallback<ParseObject>() {
+                                    @Override
+                                    public void done(List<ParseObject> search, ParseException e) {
+                                        if (e == null && !searchView.isIconified()) {
+                                            adapter.replaceContacts(search);
+                                            Log.d("cl.snatch.snatch", "result: " + String.valueOf(search.size()));
+                                        } else {
+                                            Log.d("cl.snatch.snatch", "error: " + e.getMessage());
+                                        }
+                                    }
+                                });
                             }
                         }
-                    });
+                    }, 1000);
+
                     return false;
                 }
             });

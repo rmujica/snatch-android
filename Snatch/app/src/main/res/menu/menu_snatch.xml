@@ -4,6 +4,10 @@
     tools:context="cl.snatch.snatch.activities.SnatchActivity">
 
     <item android:id="@+id/action_snatch" android:title="@string/action_snatch"
+        android:icon="@drawable/ic_download_white"
         android:orderInCategory="100" app:showAsAction="ifRoom" />
+
+    <item android:id="@+id/action_unfriend" android:title="@string/delete_friend"
+        android:orderInCategory="101" app:showAsAction="never" />
 
 </menu>

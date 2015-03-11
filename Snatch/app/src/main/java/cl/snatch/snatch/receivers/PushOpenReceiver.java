@@ -61,14 +61,13 @@ public class PushOpenReceiver extends ParsePushBroadcastReceiver {
                         parseUser.pinInBackground("myFriends");
                         ParseUser.getCurrentUser().addUnique("friends", id);
                         ParseUser.getCurrentUser().saveEventually();
-                        PushOpenReceiver.super.onPushReceive(context, intent);
                     }
                 });
             }
         } catch (JSONException ex) {
             ex.printStackTrace();
         }
-        //super.onPushReceive(context, intent);
+        super.onPushReceive(context, intent);
     }
 
 }

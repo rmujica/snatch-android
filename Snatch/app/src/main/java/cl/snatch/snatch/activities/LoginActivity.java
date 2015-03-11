@@ -18,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -70,6 +71,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
     @InjectView(R.id.register) Button register;
     @InjectView(R.id.verify) Button verify;
     @InjectView(R.id.dologin) Button login;
+    @InjectView(R.id.code) EditText code;
     private boolean uploadFinished = false;
     private boolean isVerified = false;
 
@@ -108,6 +110,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
     @OnClick(R.id.dologin)
     public void doLogin(final Button login) {
         ParseUser user = ParseUser.getCurrentUser();
+        code.setEnabled(false);
         String code = ((TextView) findViewById(R.id.code)).getText().toString();
         login.setEnabled(false);
         if (user != null && !code.isEmpty()) {
@@ -161,6 +164,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                 ParseUser.logOut();
                 Toast.makeText(LoginActivity.this, getString(R.string.wrong_code), Toast.LENGTH_LONG).show();
                 login.setEnabled(true);
+                this.code.setEnabled(true);
                 Log.d("cl.snatch.snatch", "neq: " + String.valueOf(user.getNumber("phoneVerificationCode")) + " " + ((TextView) findViewById(R.id.code)).getText().toString());
             }
         }
@@ -184,6 +188,10 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
         myUser.put("reach", 0);
         myUser.put("friends", new ArrayList<JSONObject>());
         myUser.put("verified", false);
+
+        findViewById(R.id.firstName).setEnabled(false);
+        findViewById(R.id.lastName).setEnabled(false);
+        findViewById(R.id.phone).setEnabled(false);
 
         phoneNumber = ((TextView) findViewById(R.id.phone)).getText().toString();
 
@@ -221,8 +229,9 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                                         @Override
                                         public void done(Object o, ParseException e) {
                                             if (e != null)
-                                                Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
-                                            else Log.d("cl.snatch.snatch", "noerr: " + o.toString());
+                                                Log.d("cl.snatch.snatch", "err: " + e.getMessage());
+                                            else
+                                                Log.d("cl.snatch.snatch", "noerr: " + o.toString());
                                         }
                                     });
                                 } else {
@@ -239,6 +248,9 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                             }
                         });
                     } else {
+                        findViewById(R.id.firstName).setEnabled(true);
+                        findViewById(R.id.lastName).setEnabled(true);
+                        findViewById(R.id.phone).setEnabled(true);
                         Log.d("cl.snatch.snatch", "pu: " + e.getMessage());
                     }
                 }
@@ -268,7 +280,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                             @Override
                             public void done(Object o, ParseException e) {
                                 if (e != null)
-                                    Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
+                                    Log.d("cl.snatch.snatch", "err snd: "+ e.getMessage());
                                 else Log.d("cl.snatch.snatch", "noerr: " + o.toString());
                             }
                         });
@@ -319,7 +331,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                     @Override
                     public void done(Object o, ParseException e) {
                         if (e != null)
-                            Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
+                            Log.d("cl.snatch.snatch", "err rs: "+ e.getMessage());
                         else Log.d("cl.snatch.snatch", "noerr: " + o.toString());
                     }
                 });
@@ -343,6 +355,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
     @OnClick(R.id.verify)
     public void doVerify(final Button verify) {
         verify.setEnabled(false);
+        code.setEnabled(false);
         ParseUser.getCurrentUser().fetchInBackground(new GetCallback<ParseUser>() {
             @Override
             public void done(ParseUser user, ParseException e) {
@@ -370,17 +383,18 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                                         verify.setText(getString(R.string.still_uploading));
                                     }
                                 } else {
-                                    Log.d("cl.snatch.snatch", "err: " + e.getMessage());
+                                    Log.d("cl.snatch.snatch", "err sav:  " + e.getMessage());
                                 }
                             }
                         });
                     } else {
                         Toast.makeText(LoginActivity.this, getString(R.string.wrong_code), Toast.LENGTH_LONG).show();
                         verify.setEnabled(true);
+                        code.setEnabled(true);
                         Log.d("cl.snatch.snatch", "neq: " + String.valueOf(user.getNumber("phoneVerificationCode")) + " " + ((TextView) findViewById(R.id.code)).getText().toString());
                     }
                 } else {
-                    Log.d("cl.snatch.snatch", "err: "+ e.getMessage());
+                    Log.d("cl.snatch.snatch", "err fib: "+ e.getMessage());
                 }
             }
         });
@@ -466,6 +480,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                 contact.put("ownerId", ParseUser.getCurrentUser().getObjectId());
                 contact.saveInBackground();
                 contact.pinInBackground("myContacts");
+                Log.d("cl.snatch.snatch", "added: " + name);
             } while (cursor.moveToNext());
         }
 
@@ -504,6 +519,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
             default:
                 break;
             case 1:
+                uploadFinished = true;
                 verify.setVisibility(View.VISIBLE);
                 login.setVisibility(View.INVISIBLE);
                 findViewById(R.id.pb).setVisibility(View.VISIBLE);
@@ -517,6 +533,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                 register.setVisibility(View.INVISIBLE);
                 break;
             case 2:
+                uploadFinished = true;
                 login.setVisibility(View.VISIBLE);
                 verify.setVisibility(View.INVISIBLE);
                 findViewById(R.id.pb).setVisibility(View.VISIBLE);
