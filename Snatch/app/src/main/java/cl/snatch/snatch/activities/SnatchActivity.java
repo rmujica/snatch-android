@@ -25,6 +25,7 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.SaveCallback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -155,7 +156,16 @@ public class SnatchActivity extends ActionBarActivity {
                                         @Override
                                         public void done(ParseException e) {
                                             if (e == null) {
-                                                Toast.makeText(SnatchActivity.this, getString(R.string.unfriended) + getIntent().getStringExtra("name") + ".", Toast.LENGTH_SHORT).show();
+                                                ArrayList<String> unfriends = new ArrayList<>();
+                                                unfriends.add(userId);
+                                                ParseUser.getCurrentUser().removeAll("friends", unfriends);
+                                                ParseUser.getCurrentUser().saveEventually(new SaveCallback() {
+                                                    @Override
+                                                    public void done(ParseException e) {
+                                                        Toast.makeText(SnatchActivity.this, getString(R.string.unfriended) + getIntent().getStringExtra("name") + ".", Toast.LENGTH_SHORT).show();
+                                                        finish();
+                                                    }
+                                                });
                                             }
                                         }
                                     });

@@ -80,7 +80,7 @@ public class ContactsFragment extends ListFragment {
         ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
         getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
         getContacts.orderByAscending("firstName");
-        getContacts.addDescendingOrder("lastName");
+        getContacts.addAscendingOrder("lastName");
         getContacts.fromLocalDatastore();
         //getContacts.fromPin("myContacts");
         getContacts.findInBackground(new FindCallback<ParseObject>() {

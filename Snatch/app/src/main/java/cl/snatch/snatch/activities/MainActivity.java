@@ -25,6 +25,7 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+import com.parse.codec.binary.StringUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -150,8 +151,19 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
 
                             if (s.startsWith("@") && s.length() > 1) {
                                 // commercial search
-                                ParseQuery<ParseObject> search = ParseQuery.getQuery("Commercial");
-                                search.whereContains("name", s.substring(1));
+                                ParseQuery<ParseObject> search1 = ParseQuery.getQuery("Commercial");
+                                search1.whereContains("name", s.substring(1));
+                                ParseQuery<ParseObject> search2 = ParseQuery.getQuery("Commercial");
+                                String s2 = s.substring(2);
+                                s2 = s.substring(1, 2).toUpperCase() + s2;
+                                search2.whereContains("name", s2);
+
+                                ArrayList<ParseQuery<ParseObject>> ors = new ArrayList<>();
+                                ors.add(search1);
+                                ors.add(search2);
+
+                                ParseQuery<ParseObject> search = ParseQuery.or(ors);
+                                search.orderByAscending("name");
                                 search.findInBackground(new FindCallback<ParseObject>() {
                                     @Override
                                     public void done(List<ParseObject> search, ParseException e) {
@@ -201,6 +213,8 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                                 ParseQuery<ParseObject> mainSearch = ParseQuery.or(search);
                                 mainSearch.whereContainedIn("ownerId", friends);
                                 mainSearch.whereEqualTo("hidden", false);
+                                mainSearch.orderByAscending("firstName");
+                                mainSearch.addAscendingOrder("lastName");
                                 mainSearch.findInBackground(new FindCallback<ParseObject>() {
                                     @Override
                                     public void done(List<ParseObject> search, ParseException e) {
