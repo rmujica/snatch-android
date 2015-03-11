@@ -48,7 +48,7 @@
     <string name="first_name">Nombre</string>
     <string name="profile_updated">¡Perfil Actualizado!</string>
     <string name="contacts_synced">¡Contactos Actualizados!</string>
-    <string name="empty_search">No results.</string>
-    <string name="delete_friend">Unfriend</string>
-    <string name="unfriended">"You are no longer friends with "</string>
+    <string name="empty_search">Sin resultados.</string>
+    <string name="delete_friend">Eliminar</string>
+    <string name="unfriended">"Ya no eres amigo de "</string>
 </resources>
