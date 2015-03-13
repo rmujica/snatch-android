@@ -1,0 +1,27 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="cl.snatch.snatch.activities.TutorialActivity"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <cl.snatch.snatch.helpers.IndicatorViewFlipper
+        android:id="@+id/pager"
+        android:background="#76c2d6"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </cl.snatch.snatch.helpers.IndicatorViewFlipper>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/next_step"
+        android:id="@+id/next"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="30dp" />
+
+</RelativeLayout>
+

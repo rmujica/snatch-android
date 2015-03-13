@@ -109,6 +109,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
 
     @OnClick(R.id.dologin)
     public void doLogin(final Button login) {
+        Log.d("cl.snatch.snatch", "logging in");
         ParseUser user = ParseUser.getCurrentUser();
         code.setEnabled(false);
         String code = ((TextView) findViewById(R.id.code)).getText().toString();
@@ -121,6 +122,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                     @Override
                     public void done(ParseException e) {
                         if (e == null) {
+                            Log.d("cl.snatch.snatch", "saving in background");
                             // save installation
                             ParseInstallation installation = ParseInstallation.getCurrentInstallation();
                             installation.put("ownerId", ParseUser.getCurrentUser().getObjectId());
@@ -141,21 +143,54 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                                 @Override
                                 public void done(final List<ParseUser> parseUsers, ParseException e) {
                                     if (e == null) {
+                                        Log.d("cl.snatch.snatch", "getting friends");
                                         ParseUser.pinAllInBackground("myFriends", parseUsers, new SaveCallback() {
                                             @Override
                                             public void done(ParseException e) {
-                                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                                startActivity(intent); // for result??
-                                                finish();
+                                                if (e == null) {
+                                                    // get contacts data
+                                                    ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
+                                                    getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
+                                                    getContacts.findInBackground(new FindCallback<ParseObject>() {
+                                                        @Override
+                                                        public void done(List<ParseObject> contacts, ParseException e) {
+                                                            if (e == null) {
+                                                                Log.d("cl.snatch.snatch", "getting contacts");
+                                                                ParseObject.pinAllInBackground("myContacts", contacts, new SaveCallback() {
+                                                                    @Override
+                                                                    public void done(ParseException e) {
+                                                                        if (e == null) {
+                                                                            Log.d("cl.snatch.snatch", "pinning contacts");
+                                                                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                                                            startActivity(intent); // for result??
+                                                                            finish();
+                                                                        } else {
+                                                                            Log.d("cl.snatch.snatch", "error saving contacts: " + e.getMessage());
+                                                                            Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error saving contacts: " + e.getMessage());
+                                                                        }
+                                                                    }
+                                                                });
+                                                            } else {
+                                                                Log.d("cl.snatch.snatch", "error loading contacts: " + e.getMessage());
+                                                                Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error loading contacts: " + e.getMessage());
+                                                            }
+                                                        }
+                                                    });
+                                                } else {
+                                                    Log.d("cl.snatch.snatch", "error saving friends: " + e.getMessage());
+                                                    Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error saving friends: " + e.getMessage());
+                                                }
                                             }
                                         });
                                     } else {
+                                        Log.d("cl.snatch.snatch", "error loading friends: " + e.getMessage());
                                         Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error loading friends: " + e.getMessage());
                                     }
                                 }
                             });
                         } else {
                             Log.d("cl.snatch.snatch", "err: " + e.getMessage());
+                            Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error logging in: " + e.getMessage());
                         }
                     }
                 });
@@ -192,6 +227,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
         findViewById(R.id.firstName).setEnabled(false);
         findViewById(R.id.lastName).setEnabled(false);
         findViewById(R.id.phone).setEnabled(false);
+        register.setEnabled(false);
 
         phoneNumber = ((TextView) findViewById(R.id.phone)).getText().toString();
 
@@ -251,6 +287,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                         findViewById(R.id.firstName).setEnabled(true);
                         findViewById(R.id.lastName).setEnabled(true);
                         findViewById(R.id.phone).setEnabled(true);
+                        register.setEnabled(true);
                         Log.d("cl.snatch.snatch", "pu: " + e.getMessage());
                     }
                 }
@@ -324,17 +361,27 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
             @Override
             public void done(ParseUser user, ParseException e) {
 
-                Map<String, Object> params = new HashMap<>();
-                params.put("phoneNumber", phoneNumber);
+                if (e == null) {
+                    Map<String, Object> params = new HashMap<>();
+                    params.put("phoneNumber", phoneNumber);
 
-                ParseCloud.callFunctionInBackground("resendVerificationCode", params,  new FunctionCallback<Object>() {
-                    @Override
-                    public void done(Object o, ParseException e) {
-                        if (e != null)
-                            Log.d("cl.snatch.snatch", "err rs: "+ e.getMessage());
-                        else Log.d("cl.snatch.snatch", "noerr: " + o.toString());
-                    }
-                });
+                    ParseCloud.callFunctionInBackground("resendVerificationCode", params, new FunctionCallback<Object>() {
+                        @Override
+                        public void done(Object o, ParseException e) {
+                            if (e != null) {
+                                Log.d("cl.snatch.snatch", "err rs: " + e.getMessage());
+                                Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "err rs: " + e.getMessage());
+                                Toast.makeText(LoginActivity.this, getString(R.string.network_error), Toast.LENGTH_SHORT).show();
+                                stepTwoLogin();
+                            } else {
+                                Log.d("cl.snatch.snatch", "noerr: " + o.toString());
+                            }
+                        }
+                    });
+                } else {
+                    Log.d("cl.snatch.snatch", "error logging in: " + e.getMessage());
+                    Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error logging in: " + e.getMessage());
+                }
             }
         });
     }
@@ -411,7 +458,13 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
             finish();
         }
 
-        sharedPref = getPreferences(Context.MODE_PRIVATE);
+        sharedPref = getSharedPreferences("p", Context.MODE_PRIVATE);
+
+        if (!sharedPref.getBoolean("tutorial", false)) {
+            Intent intent = new Intent(LoginActivity.this, TutorialActivity.class);
+            startActivity(intent);
+            finish();
+        }
 
         setContentView(R.layout.activity_login);
         ButterKnife.inject(this);

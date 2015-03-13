@@ -27,11 +27,11 @@
     <string name="send_sms">Send SMS</string>
     <string name="verification_code">Verification code</string>
     <string name="reach">Reach</string>
-    <string name="search_query">Search for contacts...</string>
+    <string name="search_query">Search for contacts…</string>
     <string name="action_add_friend">Add new friend</string>
     <string name="title_activity_add_friend">Add new friend</string>
     <string name="uploading_contacts">The verification SMS should arrive shortly. In the meanwhile, we are uploading your current phonebook to Jumpster.</string>
-    <string name="still_uploading">Still uploading contacts...</string>
+    <string name="still_uploading">Still uploading contacts…</string>
     <string name="title_activity_friend_requests">Friend requests</string>
     <string name="action_friend_requests">Friend requests</string>
     <string name="accept">Accept</string>
@@ -58,5 +58,8 @@
     <string name="empty_search">No results.</string>
     <string name="delete_friend">Unfriend</string>
     <string name="unfriended">"You are no longer friends with "</string>
+    <string name="title_activity_tutorial">TutorialActivity</string>
+    <string name="next_step">Continue</string>
+    <string name="network_error">Network error, retrying to login…</string>
 
 </resources>

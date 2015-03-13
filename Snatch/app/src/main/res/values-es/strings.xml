@@ -19,10 +19,10 @@
     <string name="send_sms">Enviar SMS</string>
     <string name="verification_code">Código de verificación</string>
     <string name="reach">Alcance</string>
-    <string name="search_query">Buscar contactos...</string>
+    <string name="search_query">Buscar contactos…</string>
     <string name="action_add_friend">Agregar nuevo amigo</string>
     <string name="uploading_contacts">El SMS de verificación debería llegar pronto. Mientras tanto, estamos exportando tus contactos telefónicos a Jumpster. </string>
-    <string name="still_uploading">Aún exportando contactos...</string>
+    <string name="still_uploading">Aún exportando contactos…</string>
     <string name="accept">Aceptar</string>
     <string name="reject">Rechazar</string>
     <string name="action_friend_requests">Solicitudes</string>
@@ -51,4 +51,6 @@
     <string name="empty_search">Sin resultados.</string>
     <string name="delete_friend">Eliminar</string>
     <string name="unfriended">"Ya no eres amigo de "</string>
+    <string name="next_step">Continuar</string>
+    <string name="network_error">Error de red, reintentando ingresar…</string>
 </resources>
