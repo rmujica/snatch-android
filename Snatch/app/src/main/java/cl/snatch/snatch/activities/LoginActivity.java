@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -257,6 +258,15 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
 
     @OnClick(R.id.register)
     public void doRegister(final Button register) {
+        TextView fn = (TextView) findViewById(R.id.firstName);
+        TextView ln = (TextView) findViewById(R.id.lastName);
+        TextView ph = (TextView) findViewById(R.id.phone);
+
+        if (fn.getText().toString().isEmpty() || ln.getText().toString().isEmpty() || ph.getText().toString().isEmpty()) {
+            Toast.makeText(this, getString(R.string.empty_field), Toast.LENGTH_LONG).show();
+            return;
+        }
+
         register.setEnabled(false);
         // send data to parse
         final ParseUser myUser = new ParseUser();
@@ -282,69 +292,72 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
         phoneNumber = ((TextView) findViewById(R.id.phone)).getText().toString();
 
         // save bitmap as byte
-        if (avatarBitmap != null) {
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            avatarBitmap.compress(Bitmap.CompressFormat.JPEG, 75, stream);
-            byte[] bitmapByte = stream.toByteArray();
-            final ParseFile avatar = new ParseFile(((TextView) findViewById(R.id.phone)).getText().toString().substring(1)+".jpg", bitmapByte);
-            avatar.saveInBackground(new SaveCallback() {
-                @Override
-                public void done(ParseException e) {
-                    if (e == null) {
-                        myUser.put("profilePicture", avatar);
-                        myUser.signUpInBackground(new SignUpCallback() {
-                            @Override
-                            public void done(ParseException e) {
-                                // go to login
-                                if (e == null) {
-                                    stepTwo();
+        if (avatarBitmap == null) {
+            avatarBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.no_avatar);
+        }
 
-                                    // save boolean
-                                    SharedPreferences.Editor editor = sharedPref.edit();
-                                    editor.putInt("waitingSMS", 1);
-                                    editor.apply();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        avatarBitmap.compress(Bitmap.CompressFormat.JPEG, 75, stream);
+        byte[] bitmapByte = stream.toByteArray();
+        final ParseFile avatar = new ParseFile(((TextView) findViewById(R.id.phone)).getText().toString().substring(1)+".jpg", bitmapByte);
+        avatar.saveInBackground(new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e == null) {
+                    myUser.put("profilePicture", avatar);
+                    myUser.signUpInBackground(new SignUpCallback() {
+                        @Override
+                        public void done(ParseException e) {
+                            // go to login
+                            if (e == null) {
+                                stepTwo();
 
-                                    // upload contacts
-                                    getSupportLoaderManager().initLoader(CONTACTS_LOADER_ID,
-                                            null,
-                                            new ContactsLoader(LoginActivity.this));
+                                // save boolean
+                                SharedPreferences.Editor editor = sharedPref.edit();
+                                editor.putInt("waitingSMS", 1);
+                                editor.apply();
 
-                                    Map<String, Object> params = new HashMap<>();
-                                    params.put("phoneNumber", myUser.getString("phoneNumber"));
-                                    ParseCloud.callFunctionInBackground("sendVerificationCode", params, new FunctionCallback<Object>() {
-                                        @Override
-                                        public void done(Object o, ParseException e) {
-                                            if (e != null) {
-                                                Log.d("cl.snatch.snatch", "err: " + e.getMessage());
-                                            } else {
-                                                Log.d("cl.snatch.snatch", "noerr: " + o.toString());
-                                            }
+                                // upload contacts
+                                getSupportLoaderManager().initLoader(CONTACTS_LOADER_ID,
+                                        null,
+                                        new ContactsLoader(LoginActivity.this));
+
+                                Map<String, Object> params = new HashMap<>();
+                                params.put("phoneNumber", myUser.getString("phoneNumber"));
+                                ParseCloud.callFunctionInBackground("sendVerificationCode", params, new FunctionCallback<Object>() {
+                                    @Override
+                                    public void done(Object o, ParseException e) {
+                                        if (e != null) {
+                                            Log.d("cl.snatch.snatch", "err: " + e.getMessage());
+                                        } else {
+                                            Log.d("cl.snatch.snatch", "noerr: " + o.toString());
                                         }
-                                    });
-                                } else {
-                                    // save boolean
-                                    SharedPreferences.Editor editor = sharedPref.edit();
-                                    editor.putInt("waitingSMS", 2);
-                                    editor.apply();
+                                    }
+                                });
+                            } else {
+                                // save boolean
+                                SharedPreferences.Editor editor = sharedPref.edit();
+                                editor.putInt("waitingSMS", 2);
+                                editor.apply();
 
-                                    stepTwoLogin();
-                                    Log.d("cl.snatch.snatch", "pp: " + e.getMessage());
-                                }
-
-
+                                stepTwoLogin();
+                                Log.d("cl.snatch.snatch", "pp: " + e.getMessage());
                             }
-                        });
-                    } else {
-                        findViewById(R.id.firstName).setEnabled(true);
-                        findViewById(R.id.lastName).setEnabled(true);
-                        findViewById(R.id.phone).setEnabled(true);
-                        register.setEnabled(true);
-                        Log.d("cl.snatch.snatch", "pu: " + e.getMessage());
-                    }
-                }
-            });
 
-        } else {
+
+                        }
+                    });
+                } else {
+                    findViewById(R.id.firstName).setEnabled(true);
+                    findViewById(R.id.lastName).setEnabled(true);
+                    findViewById(R.id.phone).setEnabled(true);
+                    register.setEnabled(true);
+                    Log.d("cl.snatch.snatch", "pu: " + e.getMessage());
+                }
+            }
+        });
+
+        /*} else {
             myUser.signUpInBackground(new SignUpCallback() {
                 @Override
                 public void done(ParseException e) {
@@ -384,7 +397,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                 }
             });
             register.setEnabled(true);
-        }
+        }*/
     }
 
     private void stepTwoLogin() {

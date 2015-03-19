@@ -1,6 +1,5 @@
 package cl.snatch.snatch.activities;
 
-import android.accounts.Account;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -22,48 +21,34 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
-import com.parse.CountCallback;
 import com.parse.DeleteCallback;
 import com.parse.FindCallback;
-import com.parse.FunctionCallback;
 import com.parse.GetCallback;
-import com.parse.LogInCallback;
-import com.parse.ParseCloud;
 import com.parse.ParseException;
 import com.parse.ParseFile;
-import com.parse.ParseInstallation;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
-import com.parse.SignUpCallback;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONObject;
-
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 import cl.snatch.snatch.R;
+import cl.snatch.snatch.fragments.DeleteDialog;
 import cl.snatch.snatch.helpers.MediaHelper;
 import cl.snatch.snatch.models.ContactsLoader;
 
 
-public class AccountActivity extends ActionBarActivity implements ContactsLoader.LoadFinishedCallback {
+public class AccountActivity extends ActionBarActivity implements ContactsLoader.LoadFinishedCallback, DeleteDialog.CancelListener {
 
     private static final int ACTION_REQUEST_GALLERY = 0x1;
     private static final int ACTION_REQUEST_CAMERA = 0x2;
@@ -82,6 +67,7 @@ public class AccountActivity extends ActionBarActivity implements ContactsLoader
 
     private boolean uploadFinished = false;
     private boolean isVerified = false;
+    private View v;
 
     @OnClick(R.id.avatar)
     public void setAvatar() {
@@ -196,48 +182,13 @@ public class AccountActivity extends ActionBarActivity implements ContactsLoader
                     .into(avatar);
         }
 
-        findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
+        v = findViewById(R.id.delete);
+        v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 v.setEnabled(false);
-                ParseQuery<ParseObject> deleteContacts = ParseQuery.getQuery("Contact");
-                deleteContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
-                deleteContacts.findInBackground(new FindCallback<ParseObject>() {
-                    @Override
-                    public void done(List<ParseObject> list, ParseException e) {
-                        if (e == null) {
-                            ParseObject.deleteAllInBackground(list);
-                        }
-                    }
-                });
-                ParseQuery<ParseObject> deleteFriends1 = ParseQuery.getQuery("Friend");
-                deleteFriends1.whereEqualTo("from", ParseUser.getCurrentUser());
-                ParseQuery<ParseObject> deleteFriends2 = ParseQuery.getQuery("Friend");
-                deleteFriends2.whereEqualTo("to", ParseUser.getCurrentUser());
-                ArrayList<ParseQuery<ParseObject>> q = new ArrayList<>();
-                q.add(deleteFriends1);
-                q.add(deleteFriends2);
-                ParseQuery<ParseObject> deleteFriends = ParseQuery.or(q);
-                deleteFriends.findInBackground(new FindCallback<ParseObject>() {
-                    @Override
-                    public void done(List<ParseObject> list, ParseException e) {
-                        if (e == null) {
-                            ParseObject.deleteAllInBackground(list);
-                        }
-                    }
-                });
-                ParseUser.getCurrentUser().deleteInBackground(new DeleteCallback() {
-                    @Override
-                    public void done(ParseException e) {
-                        ParseUser.logOut();
-                        SharedPreferences sharedPref = getSharedPreferences("p", Context.MODE_PRIVATE);
-                        sharedPref.edit().clear().apply();
-                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        intent.putExtra("EXIT", true);
-                        startActivity(intent);
-                    }
-                });
+                DeleteDialog dialog = new DeleteDialog();
+                dialog.show(getSupportFragmentManager(), "delete");
             }
         });
     }
@@ -377,6 +328,21 @@ public class AccountActivity extends ActionBarActivity implements ContactsLoader
     @Override
     public Context getContext() {
         return this;
+    }
+
+    @Override
+    public void CancelDialog() {
+        v.setEnabled(true);
+    }
+
+    @Override
+    public void FinishJob() {
+        SharedPreferences sharedPref = getSharedPreferences("p", Context.MODE_PRIVATE);
+        sharedPref.edit().clear().apply();
+        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("EXIT", true);
+        startActivity(intent);
     }
 
 }

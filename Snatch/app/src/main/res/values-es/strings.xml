@@ -55,4 +55,13 @@
     <string name="network_error">Error de red, reintentando ingresar…</string>
     <string name="resend_code">Reenviar código</string>
     <string name="delete_account">Eliminar cuenta</string>
+    <string name="empty_field">Debes rellenar todos los campos antes de continuar</string>
+    <string name="dialog_really_delete">¿De veras quieres eliminar tu cuenta de Jumpster? Se demora un par de minutos en terminar de eliminar toda tu información.</string>
+    <string name="yes">Si</string>
+    <string name="no">No</string>
+    <string name="friends">Amigos</string>
+    <string name="contacts">Contactos</string>
+    <string name="reach_s">"Alcance: "</string>
+    <string name="searching">Buscando…</string>
+    <string name="no_result">Sin resultados.\nAntepón \'@\' para buscar números comerciales.</string>
 </resources>

@@ -6,6 +6,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 import java.util.Locale;
 
+import cl.snatch.snatch.R;
 import cl.snatch.snatch.activities.MainActivity;
 import cl.snatch.snatch.fragments.ContactsFragment;
 import cl.snatch.snatch.fragments.FriendsFragment;
@@ -48,9 +49,9 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
         Locale l = Locale.getDefault();
         switch (position) {
             case 0:
-                return "Friends".toUpperCase(l);
+                return mainActivity.getString(R.string.friends).toUpperCase(l);
             case 1:
-                return "Contacts".toUpperCase(l);
+                return mainActivity.getString(R.string.contacts).toUpperCase(l);
         }
         return null;
     }

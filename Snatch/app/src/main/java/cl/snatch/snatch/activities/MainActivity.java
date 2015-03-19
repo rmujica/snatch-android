@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.parse.FindCallback;
 import com.parse.GetCallback;
@@ -60,7 +61,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
     RecyclerView.LayoutManager layoutManager;
     String lastSearch = "";
     Handler changeHandler;
-    View pb;
+    TextView pb;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -74,7 +75,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
         setContentView(R.layout.activity_main);
 
         changeHandler = new Handler();
-        pb = findViewById(R.id.pb);
+        pb = (TextView) findViewById(R.id.empty);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.actionbar);
         toolbar.setTitle(R.string.app_name);
@@ -130,11 +131,13 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                         changeHandler.removeCallbacksAndMessages(null);
                         adapter.replaceContacts(new ArrayList<ParseObject>());
                         list.setVisibility(View.GONE);
+                        pb.setVisibility(View.GONE);
                         return false;
                     }
 
                     list.setVisibility(View.VISIBLE);
                     list.setEmptyView(pb);
+                    pb.setText(R.string.searching);
                     Log.d("cl.snatch.snatch", "strs: " + lastSearch + " " + s);
 
                     if (!lastSearch.equals(s)) {
@@ -169,6 +172,9 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                                     public void done(List<ParseObject> search, ParseException e) {
                                         if (e == null && !searchView.isIconified()) {
                                             adapter.replaceContacts(search);
+                                            if (search.size() == 0) {
+                                                pb.setText(getString(R.string.no_result));
+                                            }
                                         }
                                     }
                                 });
@@ -221,8 +227,12 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                                         if (e == null && !searchView.isIconified()) {
                                             adapter.replaceContacts(search);
                                             Log.d("cl.snatch.snatch", "result: " + String.valueOf(search.size()));
+                                            if (search.size() == 0) {
+                                                pb.setText(getString(R.string.no_result));
+                                            }
                                         } else {
                                             Log.d("cl.snatch.snatch", "error: " + e.getMessage());
+
                                         }
                                     }
                                 });
@@ -295,7 +305,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                         } else {
                             i = 0;
                         }
-                        searchView.setQueryHint("Reach: " + String.valueOf(i));
+                        searchView.setQueryHint(getString(R.string.reach_s) + String.valueOf(i));
                     }
                 }
             }
