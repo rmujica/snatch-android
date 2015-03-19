@@ -87,6 +87,16 @@
                 android:layout_below="@+id/lastName"
                 android:layout_toLeftOf="@id/update"/>
 
+            <Button
+                android:layout_marginTop="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/delete_account"
+                android:id="@+id/delete"
+                android:layout_below="@id/update"
+                android:layout_alignRight="@+id/lastName"
+                android:layout_alignEnd="@+id/lastName" />
+
             <ProgressBar
                 style="?android:attr/progressBarStyleLarge"
                 android:visibility="invisible"

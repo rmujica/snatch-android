@@ -53,4 +53,6 @@
     <string name="unfriended">"Ya no eres amigo de "</string>
     <string name="next_step">Continuar</string>
     <string name="network_error">Error de red, reintentando ingresar…</string>
+    <string name="resend_code">Reenviar código</string>
+    <string name="delete_account">Eliminar cuenta</string>
 </resources>

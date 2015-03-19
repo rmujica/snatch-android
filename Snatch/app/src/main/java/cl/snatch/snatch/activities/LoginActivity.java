@@ -9,6 +9,8 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
@@ -20,6 +22,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -72,8 +75,53 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
     @InjectView(R.id.verify) Button verify;
     @InjectView(R.id.dologin) Button login;
     @InjectView(R.id.code) EditText code;
+    @InjectView(R.id.resend) Button resend;
+    @InjectView(R.id.retrypb) ProgressBar rpb;
+    private int cpb = 0;
     private boolean uploadFinished = false;
     private boolean isVerified = false;
+    private Handler handler;
+    private CountDownTimer timer;
+
+    @OnClick(R.id.resend)
+    public void resendCode(Button b) {
+        b.setEnabled(false);
+        rpb.setProgress(cpb);
+        rpb.setVisibility(View.VISIBLE);
+
+        timer = new CountDownTimer(30000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                cpb++;
+                rpb.setProgress(cpb);
+            }
+
+            @Override
+            public void onFinish() {
+
+            }
+        };
+
+        handler.removeCallbacksAndMessages(null);
+        Map<String, Object> params = new HashMap<>();
+        params.put("phoneNumber", phoneNumber);
+        ParseCloud.callFunctionInBackground("resendVerificationCode", params, new FunctionCallback<Object>() {
+            @Override
+            public void done(Object o, ParseException e) {
+                if (e == null) {
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            resend.setEnabled(true);
+                            rpb.setVisibility(View.INVISIBLE);
+                        }
+                    }, 1000 * 30);
+                } else {
+                    Log.d("cl.snatch.snatch", "noerr: " + o.toString());
+                }
+            }
+        });
+    }
 
     @OnClick(R.id.avatar)
     public void setAvatar() {
@@ -110,98 +158,100 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
     @OnClick(R.id.dologin)
     public void doLogin(final Button login) {
         Log.d("cl.snatch.snatch", "logging in");
-        ParseUser user = ParseUser.getCurrentUser();
-        code.setEnabled(false);
-        String code = ((TextView) findViewById(R.id.code)).getText().toString();
-        login.setEnabled(false);
+        final ParseUser user = ParseUser.getCurrentUser();
+
+        final String code = ((TextView) findViewById(R.id.code)).getText().toString();
         if (user != null && !code.isEmpty()) {
-            if (user.getNumber("phoneVerificationCode").equals(Integer.parseInt(code))) {
-                ParseUser u = ParseUser.getCurrentUser();
-                u.put("verified", true);
-                u.saveInBackground(new SaveCallback() {
-                    @Override
-                    public void done(ParseException e) {
-                        if (e == null) {
-                            Log.d("cl.snatch.snatch", "saving in background");
-                            // save installation
-                            ParseInstallation installation = ParseInstallation.getCurrentInstallation();
-                            installation.put("ownerId", ParseUser.getCurrentUser().getObjectId());
-                            installation.saveInBackground();
+            this.code.setEnabled(false);
+            login.setEnabled(false);
+            Map<String, Object> params = new HashMap<>();
+            params.put("phoneVerificationCode", Integer.parseInt(((TextView) findViewById(R.id.code)).getText().toString()));
+            ParseCloud.callFunctionInBackground("verifyPhoneNumber", params, new FunctionCallback<Object>() {
+                @Override
+                public void done(Object o, ParseException e) {
+                    if (e == null) {
+                        Log.d("cl.snatch.snatch", "saving in background");
+                        // save installation
+                        ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+                        installation.put("ownerId", ParseUser.getCurrentUser().getObjectId());
+                        installation.saveInBackground();
 
-                            // pull friend list and save
-                            // get friend list
-                            final ArrayList<String> friends =
-                                    new ArrayList<>(ParseUser.getCurrentUser().getList("friends").size());
-                            friends.addAll(ParseUser.getCurrentUser().<String>getList("friends"));
+                        // pull friend list and save
+                        // get friend list
+                        final ArrayList<String> friends =
+                                new ArrayList<>(ParseUser.getCurrentUser().getList("friends").size());
+                        friends.addAll(ParseUser.getCurrentUser().<String>getList("friends"));
 
-                            // getting friend data
-                            ParseQuery<ParseUser> getFriends = ParseUser.getQuery();
-                            getFriends.whereContainedIn("objectId", friends);
-                            getFriends.orderByAscending("firstName");
-                            getFriends.addAscendingOrder("lastName");
-                            getFriends.findInBackground(new FindCallback<ParseUser>() {
-                                @Override
-                                public void done(final List<ParseUser> parseUsers, ParseException e) {
-                                    if (e == null) {
-                                        Log.d("cl.snatch.snatch", "getting friends");
-                                        ParseUser.pinAllInBackground("myFriends", parseUsers, new SaveCallback() {
-                                            @Override
-                                            public void done(ParseException e) {
-                                                if (e == null) {
-                                                    // get contacts data
-                                                    ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
-                                                    getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
-                                                    getContacts.findInBackground(new FindCallback<ParseObject>() {
-                                                        @Override
-                                                        public void done(List<ParseObject> contacts, ParseException e) {
-                                                            if (e == null) {
-                                                                Log.d("cl.snatch.snatch", "getting contacts");
-                                                                ParseObject.pinAllInBackground("myContacts", contacts, new SaveCallback() {
-                                                                    @Override
-                                                                    public void done(ParseException e) {
-                                                                        if (e == null) {
-                                                                            Log.d("cl.snatch.snatch", "pinning contacts");
-                                                                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                                                            startActivity(intent); // for result??
-                                                                            finish();
-                                                                        } else {
-                                                                            Log.d("cl.snatch.snatch", "error saving contacts: " + e.getMessage());
-                                                                            Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error saving contacts: " + e.getMessage());
-                                                                        }
+                        // getting friend data
+                        ParseQuery<ParseUser> getFriends = ParseUser.getQuery();
+                        getFriends.whereContainedIn("objectId", friends);
+                        getFriends.orderByAscending("firstName");
+                        getFriends.addAscendingOrder("lastName");
+                        getFriends.findInBackground(new FindCallback<ParseUser>() {
+                            @Override
+                            public void done(final List<ParseUser> parseUsers, ParseException e) {
+                                if (e == null) {
+                                    Log.d("cl.snatch.snatch", "getting friends");
+                                    ParseUser.pinAllInBackground("myFriends", parseUsers, new SaveCallback() {
+                                        @Override
+                                        public void done(ParseException e) {
+                                            if (e == null) {
+                                                // get contacts data
+                                                ParseQuery<ParseObject> getContacts = ParseQuery.getQuery("Contact");
+                                                getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
+                                                getContacts.findInBackground(new FindCallback<ParseObject>() {
+                                                    @Override
+                                                    public void done(List<ParseObject> contacts, ParseException e) {
+                                                        if (e == null) {
+                                                            Log.d("cl.snatch.snatch", "getting contacts");
+                                                            ParseObject.pinAllInBackground("myContacts", contacts, new SaveCallback() {
+                                                                @Override
+                                                                public void done(ParseException e) {
+                                                                    if (e == null) {
+                                                                        Log.d("cl.snatch.snatch", "pinning contacts");
+                                                                        SharedPreferences.Editor editor = sharedPref.edit();
+                                                                        editor.putBoolean("verified", true);
+                                                                        editor.apply();
+
+                                                                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                                                        startActivity(intent); // for result??
+                                                                        finish();
+                                                                    } else {
+                                                                        Log.d("cl.snatch.snatch", "error saving contacts: " + e.getMessage());
+                                                                        Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error saving contacts: " + e.getMessage());
                                                                     }
-                                                                });
-                                                            } else {
-                                                                Log.d("cl.snatch.snatch", "error loading contacts: " + e.getMessage());
-                                                                Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error loading contacts: " + e.getMessage());
-                                                            }
+                                                                }
+                                                            });
+                                                        } else {
+                                                            Log.d("cl.snatch.snatch", "error loading contacts: " + e.getMessage());
+                                                            Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error loading contacts: " + e.getMessage());
                                                         }
-                                                    });
-                                                } else {
-                                                    Log.d("cl.snatch.snatch", "error saving friends: " + e.getMessage());
-                                                    Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error saving friends: " + e.getMessage());
-                                                }
+                                                    }
+                                                });
+                                            } else {
+                                                Log.d("cl.snatch.snatch", "error saving friends: " + e.getMessage());
+                                                Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error saving friends: " + e.getMessage());
                                             }
-                                        });
-                                    } else {
-                                        Log.d("cl.snatch.snatch", "error loading friends: " + e.getMessage());
-                                        Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error loading friends: " + e.getMessage());
-                                    }
+                                        }
+                                    });
+                                } else {
+                                    Log.d("cl.snatch.snatch", "error loading friends: " + e.getMessage());
+                                    Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error loading friends: " + e.getMessage());
                                 }
-                            });
-                        } else {
-                            Log.d("cl.snatch.snatch", "err: " + e.getMessage());
-                            Crashlytics.log(Log.ERROR, "cl.snatch.snatch", "error logging in: " + e.getMessage());
-                        }
+                            }
+                        });
+                    } else {
+                        // todo: tell user code doesn't match
+                        //ParseUser.logOut();
+                        Toast.makeText(LoginActivity.this, getString(R.string.wrong_code), Toast.LENGTH_LONG).show();
+                        login.setEnabled(true);
+                        LoginActivity.this.code.setEnabled(true);
+                        Log.d("cl.snatch.snatch", "neq: " + String.valueOf(user.getNumber("phoneVerificationCode")) + " " + ((TextView) findViewById(R.id.code)).getText().toString());
                     }
-                });
-            } else {
-                // todo: tell user code doesn't match
-                ParseUser.logOut();
-                Toast.makeText(LoginActivity.this, getString(R.string.wrong_code), Toast.LENGTH_LONG).show();
-                login.setEnabled(true);
-                this.code.setEnabled(true);
-                Log.d("cl.snatch.snatch", "neq: " + String.valueOf(user.getNumber("phoneVerificationCode")) + " " + ((TextView) findViewById(R.id.code)).getText().toString());
-            }
+                }
+            });
+
+
         }
     }
 
@@ -264,10 +314,11 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                                     ParseCloud.callFunctionInBackground("sendVerificationCode", params, new FunctionCallback<Object>() {
                                         @Override
                                         public void done(Object o, ParseException e) {
-                                            if (e != null)
+                                            if (e != null) {
                                                 Log.d("cl.snatch.snatch", "err: " + e.getMessage());
-                                            else
+                                            } else {
                                                 Log.d("cl.snatch.snatch", "noerr: " + o.toString());
+                                            }
                                         }
                                     });
                                 } else {
@@ -313,12 +364,12 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                         Map<String, Object> params = new HashMap<>();
                         params.put("phoneNumber", myUser.getString("phoneNumber"));
 
-                        ParseCloud.callFunctionInBackground("sendVerificationCode", params,  new FunctionCallback<Object>() {
+                        ParseCloud.callFunctionInBackground("sendVerificationCode", params, new FunctionCallback<Object>() {
                             @Override
                             public void done(Object o, ParseException e) {
-                                if (e != null)
-                                    Log.d("cl.snatch.snatch", "err snd: "+ e.getMessage());
-                                else Log.d("cl.snatch.snatch", "noerr: " + o.toString());
+                                if (e != null) {
+                                    Log.d("cl.snatch.snatch", "err snd: " + e.getMessage());
+                                } else Log.d("cl.snatch.snatch", "noerr: " + o.toString());
                             }
                         });
                     } else {
@@ -346,6 +397,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
         findViewById(R.id.code).setVisibility(View.VISIBLE);
         findViewById(R.id.sms_txt).setVisibility(View.INVISIBLE);
         findViewById(R.id.avatar).setVisibility(View.INVISIBLE);
+        findViewById(R.id.resend).setVisibility(View.VISIBLE);
         register.setVisibility(View.INVISIBLE);
 
         // resend sms
@@ -396,6 +448,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
         findViewById(R.id.code).setVisibility(View.VISIBLE);
         findViewById(R.id.sms_txt).setVisibility(View.INVISIBLE);
         findViewById(R.id.avatar).setVisibility(View.INVISIBLE);
+        findViewById(R.id.resend).setVisibility(View.VISIBLE);
         register.setVisibility(View.INVISIBLE);
     }
 
@@ -403,45 +456,40 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
     public void doVerify(final Button verify) {
         verify.setEnabled(false);
         code.setEnabled(false);
-        ParseUser.getCurrentUser().fetchInBackground(new GetCallback<ParseUser>() {
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("phoneVerificationCode", Integer.parseInt(((TextView) findViewById(R.id.code)).getText().toString()));
+        ParseCloud.callFunctionInBackground("verifyPhoneNumber", params, new FunctionCallback<Object>() {
             @Override
-            public void done(ParseUser user, ParseException e) {
+            public void done(Object o, ParseException e) {
                 if (e == null) {
-                    if (user.getNumber("phoneVerificationCode").equals(Integer.parseInt(((TextView) findViewById(R.id.code)).getText().toString()))) {
+                    Log.d("cl.snatch.snatch", "user saved");
+                    isVerified = true;
 
-                        ParseUser u = ParseUser.getCurrentUser();
-                        u.put("verified", true);
-                        u.saveInBackground(new SaveCallback() {
-                            @Override
-                            public void done(ParseException e) {
-                                if (e == null) {
-                                    isVerified = true;
+                    if (uploadFinished) {
+                        // save installation
+                        Log.d("cl.snatch.snatch", "1 upload finished");
+                        ParseInstallation installation = ParseInstallation.getCurrentInstallation();
+                        installation.put("ownerId", ParseUser.getCurrentUser().getObjectId());
+                        installation.saveInBackground();
 
-                                    if (uploadFinished) {
-                                        // save installation
-                                        ParseInstallation installation = ParseInstallation.getCurrentInstallation();
-                                        installation.put("ownerId", ParseUser.getCurrentUser().getObjectId());
-                                        installation.saveInBackground();
+                        handler.removeCallbacksAndMessages(null);
+                        if (timer != null) timer.cancel();
 
-                                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                        startActivity(intent); // for result??
-                                        finish();
-                                    } else {
-                                        verify.setText(getString(R.string.still_uploading));
-                                    }
-                                } else {
-                                    Log.d("cl.snatch.snatch", "err sav:  " + e.getMessage());
-                                }
-                            }
-                        });
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putBoolean("verified", true);
+                        editor.apply();
+
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent); // for result??
+                        finish();
                     } else {
-                        Toast.makeText(LoginActivity.this, getString(R.string.wrong_code), Toast.LENGTH_LONG).show();
-                        verify.setEnabled(true);
-                        code.setEnabled(true);
-                        Log.d("cl.snatch.snatch", "neq: " + String.valueOf(user.getNumber("phoneVerificationCode")) + " " + ((TextView) findViewById(R.id.code)).getText().toString());
+                        verify.setText(getString(R.string.still_uploading));
                     }
                 } else {
-                    Log.d("cl.snatch.snatch", "err fib: "+ e.getMessage());
+                    Toast.makeText(LoginActivity.this, getString(R.string.wrong_code), Toast.LENGTH_LONG).show();
+                    verify.setEnabled(true);
+                    code.setEnabled(true);
                 }
             }
         });
@@ -451,14 +499,17 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        sharedPref = getSharedPreferences("p", Context.MODE_PRIVATE);
+
         ParseUser currentUser = ParseUser.getCurrentUser();
-        if (currentUser != null && currentUser.getBoolean("verified")) {
+        if (currentUser != null && sharedPref.getBoolean("verified", false)) {
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
+        } else {
+            Log.d("cl.snatch.snatch", "null: " + String.valueOf(currentUser == null) + " verified: " + String.valueOf(sharedPref.getBoolean("verified", false)));
         }
 
-        sharedPref = getSharedPreferences("p", Context.MODE_PRIVATE);
 
         if (!sharedPref.getBoolean("tutorial", false)) {
             Intent intent = new Intent(LoginActivity.this, TutorialActivity.class);
@@ -471,6 +522,8 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.actionbar);
         setSupportActionBar(toolbar);
+
+        handler = new Handler();
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -540,10 +593,19 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
         uploadFinished = true;
 
         if (isVerified) {
+            Log.d("cl.snatch.snatch", "finished and verified + ");
+
             // save installation
             ParseInstallation installation = ParseInstallation.getCurrentInstallation();
             installation.put("ownerId", ParseUser.getCurrentUser().getObjectId());
             installation.saveInBackground();
+
+            handler.removeCallbacksAndMessages(null);
+            timer.cancel();
+
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putBoolean("verified", true);
+            editor.apply();
 
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(intent); // for result??
@@ -583,6 +645,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                 findViewById(R.id.code).setVisibility(View.VISIBLE);
                 findViewById(R.id.sms_txt).setVisibility(View.INVISIBLE);
                 findViewById(R.id.avatar).setVisibility(View.INVISIBLE);
+                findViewById(R.id.resend).setVisibility(View.VISIBLE);
                 register.setVisibility(View.INVISIBLE);
                 break;
             case 2:
@@ -597,6 +660,7 @@ public class LoginActivity extends ActionBarActivity implements ContactsLoader.L
                 findViewById(R.id.code).setVisibility(View.VISIBLE);
                 findViewById(R.id.sms_txt).setVisibility(View.INVISIBLE);
                 findViewById(R.id.avatar).setVisibility(View.INVISIBLE);
+                findViewById(R.id.resend).setVisibility(View.VISIBLE);
                 register.setVisibility(View.INVISIBLE);
                 break;
         }

@@ -123,7 +123,6 @@
                 android:layout_alignRight="@+id/code"
                 android:layout_alignEnd="@+id/code" />
 
-
             <Button
                 android:layout_marginTop="8dp"
                 android:layout_width="wrap_content"
@@ -134,6 +133,30 @@
                 android:layout_below="@+id/code"
                 android:layout_alignRight="@+id/code"
                 android:layout_alignEnd="@+id/code" />
+
+            <Button
+                android:layout_marginTop="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/resend_code"
+                android:visibility="invisible"
+                android:id="@+id/resend"
+                android:layout_below="@+id/code"
+                android:layout_alignLeft="@+id/code"
+                android:layout_alignStart="@+id/code" />
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleSmall"
+                android:id="@+id/retrypb"
+                android:max="30"
+                android:progress="0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="invisible"
+                android:layout_below="@+id/code"
+                android:layout_toRightOf="@id/resend"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="5dp" />
 
         </RelativeLayout>
 

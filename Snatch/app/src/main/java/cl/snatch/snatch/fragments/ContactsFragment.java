@@ -81,8 +81,9 @@ public class ContactsFragment extends ListFragment {
         getContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
         getContacts.orderByAscending("firstName");
         getContacts.addAscendingOrder("lastName");
-        getContacts.fromLocalDatastore();
+        //getContacts.fromLocalDatastore();
         //getContacts.fromPin("myContacts");
+        getContacts.setLimit(1000);
         getContacts.findInBackground(new FindCallback<ParseObject>() {
             @Override
             public void done(List<ParseObject> parseObjects, ParseException e) {

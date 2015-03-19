@@ -2,6 +2,7 @@ package cl.snatch.snatch.receivers;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import com.parse.GetCallback;
 import com.parse.Parse;
@@ -13,6 +14,8 @@ import com.parse.ParseUser;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 import cl.snatch.snatch.activities.FriendRequestsActivity;
 import cl.snatch.snatch.activities.SnatchActivity;
@@ -60,6 +63,22 @@ public class PushOpenReceiver extends ParsePushBroadcastReceiver {
                     public void done(ParseUser parseUser, ParseException e) {
                         parseUser.pinInBackground("myFriends");
                         ParseUser.getCurrentUser().addUnique("friends", id);
+                        ParseUser.getCurrentUser().saveEventually();
+                    }
+                });
+            } else if (json.has("deletedFriend")) {
+                // friend deleted, remove from pin
+                final String id = json.getString("deletedFriend");
+                Log.d("cl.snatch.snatch", "friend deleted");
+                ParseQuery<ParseUser> newFriend = ParseUser.getQuery();
+                newFriend.getInBackground(id, new GetCallback<ParseUser>() {
+                    @Override
+                    public void done(ParseUser parseUser, ParseException e) {
+                        parseUser.unpinInBackground("myFriends");
+                        Log.d("cl.snatch.snatch", "friend deleted: " + parseUser.getString("fullName"));
+                        ArrayList<String> f = new ArrayList<>();
+                        f.add(id);
+                        ParseUser.getCurrentUser().removeAll("friends", f);
                         ParseUser.getCurrentUser().saveEventually();
                     }
                 });

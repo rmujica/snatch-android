@@ -195,6 +195,51 @@ public class AccountActivity extends ActionBarActivity implements ContactsLoader
                     .load(R.drawable.ic_avatar)
                     .into(avatar);
         }
+
+        findViewById(R.id.delete).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                v.setEnabled(false);
+                ParseQuery<ParseObject> deleteContacts = ParseQuery.getQuery("Contact");
+                deleteContacts.whereEqualTo("owner", ParseUser.getCurrentUser());
+                deleteContacts.findInBackground(new FindCallback<ParseObject>() {
+                    @Override
+                    public void done(List<ParseObject> list, ParseException e) {
+                        if (e == null) {
+                            ParseObject.deleteAllInBackground(list);
+                        }
+                    }
+                });
+                ParseQuery<ParseObject> deleteFriends1 = ParseQuery.getQuery("Friend");
+                deleteFriends1.whereEqualTo("from", ParseUser.getCurrentUser());
+                ParseQuery<ParseObject> deleteFriends2 = ParseQuery.getQuery("Friend");
+                deleteFriends2.whereEqualTo("to", ParseUser.getCurrentUser());
+                ArrayList<ParseQuery<ParseObject>> q = new ArrayList<>();
+                q.add(deleteFriends1);
+                q.add(deleteFriends2);
+                ParseQuery<ParseObject> deleteFriends = ParseQuery.or(q);
+                deleteFriends.findInBackground(new FindCallback<ParseObject>() {
+                    @Override
+                    public void done(List<ParseObject> list, ParseException e) {
+                        if (e == null) {
+                            ParseObject.deleteAllInBackground(list);
+                        }
+                    }
+                });
+                ParseUser.getCurrentUser().deleteInBackground(new DeleteCallback() {
+                    @Override
+                    public void done(ParseException e) {
+                        ParseUser.logOut();
+                        SharedPreferences sharedPref = getSharedPreferences("p", Context.MODE_PRIVATE);
+                        sharedPref.edit().clear().apply();
+                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        intent.putExtra("EXIT", true);
+                        startActivity(intent);
+                    }
+                });
+            }
+        });
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

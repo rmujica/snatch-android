@@ -61,5 +61,7 @@
     <string name="title_activity_tutorial">TutorialActivity</string>
     <string name="next_step">Continue</string>
     <string name="network_error">Network error, retrying to login…</string>
+    <string name="resend_code">Resend SMS Code</string>
+    <string name="delete_account">Delete account</string>
 
 </resources>

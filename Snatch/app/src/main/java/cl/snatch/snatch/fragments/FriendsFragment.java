@@ -84,6 +84,7 @@ public class FriendsFragment extends Fragment {
         getFriends.orderByAscending("firstName");
         getFriends.addAscendingOrder("lastName");
         getFriends.fromLocalDatastore();
+        getFriends.setLimit(1000);
         getFriends.findInBackground(new FindCallback<ParseUser>() {
             @Override
             public void done(final List<ParseUser> parseUsers, ParseException e) {

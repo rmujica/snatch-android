@@ -21,11 +21,13 @@ import java.util.Set;
 
 import cl.snatch.snatch.R;
 
-public class ContactsAdapter extends BaseAdapter implements SectionIndexer {
+public class ContactsAdapter extends BaseAdapter /*implements SectionIndexer*/ {
 
     private List<ParseObject> contacts = new ArrayList<>();
     private String[] sections;
     private HashMap<String, Integer> mapIndex = new HashMap<>();
+    private HashMap<Integer, String> letterIndex = new HashMap<>();
+    private HashMap<String, Integer> sectionsIndex = new HashMap<>();
 
     public void updateContacts(List<ParseObject> contacts) {
         this.contacts.clear();
@@ -36,6 +38,7 @@ public class ContactsAdapter extends BaseAdapter implements SectionIndexer {
             ParseObject user = contacts.get(i);
             String ch = user.getString("firstName").substring(0, 1).toUpperCase();
             mapIndex.put(ch, i);
+            letterIndex.put(i, ch);
         }
 
         Set<String> sectionLetters = mapIndex.keySet();
@@ -46,8 +49,11 @@ public class ContactsAdapter extends BaseAdapter implements SectionIndexer {
         Collections.sort(sectionList);
 
         sections = new String[sectionList.size()];
-
         sectionList.toArray(sections);
+
+        for (String s : sectionList) {
+            sectionsIndex.put(s, sectionList.indexOf(s));
+        }
 
         notifyDataSetChanged();
     }
@@ -115,7 +121,7 @@ public class ContactsAdapter extends BaseAdapter implements SectionIndexer {
         return convertView;
     }
 
-    @Override
+    /*@Override
     public Object[] getSections() {
         return sections;
     }
@@ -127,8 +133,9 @@ public class ContactsAdapter extends BaseAdapter implements SectionIndexer {
 
     @Override
     public int getSectionForPosition(int position) {
-        return 0;
-    }
+        if (getCount() == 0) return 0;
+        return sectionsIndex.get(letterIndex.get(position));
+    }*/
 
     public void addContact(ParseObject contact) {
         this.contacts.add(contact);
