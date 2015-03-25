@@ -48,7 +48,7 @@ public class SnatchResultAdapter extends RecyclerView.Adapter<SnatchResultAdapte
         if (contacts.get(position).has("address")) {
             final ParseObject comm = contacts.get(position);
             holder.name.setText(comm.getString("name"));
-            holder.numbers.setText(comm.getString("phoneNumber"));
+            holder.numbers.setText(comm.getString("address"));
             holder.snatch.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
