@@ -190,33 +190,56 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                                     }
                                 }
 
-                                ParseQuery<ParseObject> searchFirstNameL = ParseQuery.getQuery("Contact");
-                                searchFirstNameL.whereStartsWith("firstName", s.toLowerCase());
-                                ParseQuery<ParseObject> searchFirstNameU = ParseQuery.getQuery("Contact");
-                                searchFirstNameU.whereStartsWith("firstName", s.toUpperCase());
-                                ParseQuery<ParseObject> searchFirstNameF = ParseQuery.getQuery("Contact");
-                                ParseQuery<ParseObject> searchLastNameF = ParseQuery.getQuery("Contact");
-                                try {
-                                    searchFirstNameF.whereStartsWith("firstName", s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase());
-                                    searchLastNameF.whereStartsWith("lastName", s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase());
-                                } catch (StringIndexOutOfBoundsException e) {
-                                    searchFirstNameF.whereStartsWith("firstName", s);
-                                    searchLastNameF.whereStartsWith("lastName", s);
-                                }
-                                ParseQuery<ParseObject> searchLastNameL = ParseQuery.getQuery("Contact");
-                                searchLastNameL.whereStartsWith("lastName", s.toLowerCase());
-                                ParseQuery<ParseObject> searchLastNameU = ParseQuery.getQuery("Contact");
-                                searchLastNameU.whereStartsWith("lastName", s.toUpperCase());
+                                //ArrayList<ParseQuery<ParseObject>> search = new ArrayList<>();
 
-                                ArrayList<ParseQuery<ParseObject>> search = new ArrayList<>();
-                                search.add(searchFirstNameL);
-                                search.add(searchFirstNameU);
-                                search.add(searchFirstNameF);
-                                search.add(searchLastNameL);
-                                search.add(searchLastNameU);
-                                search.add(searchLastNameF);
+                                /*for (String st : s.split(" ")) {
+                                //String st = s;
+                                    Log.d("cl.snatch.snatch", "query: " + st);
+                                    /*ParseQuery<ParseObject> searchFirstNameL = ParseQuery.getQuery("Contact");
+                                    searchFirstNameL.whereStartsWith("firstName", st.toLowerCase());
+                                    ParseQuery<ParseObject> searchFirstNameU = ParseQuery.getQuery("Contact");
+                                    searchFirstNameU.whereStartsWith("firstName", st.toUpperCase());
+                                    ParseQuery<ParseObject> searchFirstNameF = ParseQuery.getQuery("Contact");
+                                    ParseQuery<ParseObject> searchLastNameF = ParseQuery.getQuery("Contact");*/
+                                    //ParseQuery<ParseObject> searchFullNameF = ParseQuery.getQuery("Contact");
+                                    /*try {
+                                        //searchFirstNameF.whereStartsWith("firstName", st.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase());
+                                        //searchLastNameF.whereStartsWith("lastName", st.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase());
+                                        searchFullNameF.whereStartsWith("fullName", st.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase());
+                                    } catch (StringIndexOutOfBoundsException e) {
+                                        //searchFirstNameF.whereStartsWith("firstName", st);
+                                        //searchLastNameF.whereStartsWith("lastName", st);
+                                        searchFullNameF.whereStartsWith("fullName", st);
+                                    }*/
+                                    /*ParseQuery<ParseObject> searchLastNameL = ParseQuery.getQuery("Contact");
+                                    searchLastNameL.whereStartsWith("lastName", st.toLowerCase());
+                                    ParseQuery<ParseObject> searchLastNameU = ParseQuery.getQuery("Contact");
+                                    searchLastNameU.whereStartsWith("lastName", st.toUpperCase());
 
-                                ParseQuery<ParseObject> mainSearch = ParseQuery.or(search);
+                                    ParseQuery<ParseObject> searchFullNameL = ParseQuery.getQuery("Contact");
+                                    searchFullNameL.whereStartsWith("fullName", st.toLowerCase());*/
+                                    /*
+
+                                    search.add(searchFirstNameL);
+                                    search.add(searchFirstNameU);
+                                    search.add(searchFirstNameF);
+                                    search.add(searchLastNameL);
+                                    search.add(searchLastNameU);
+                                    search.add(searchLastNameF);*/
+                                    //search.add(searchFullNameF);
+                                    //search.add(searchFullNameU);
+                                    //search.add(searchFullNameL);
+                                    /*search.add(searchFullName);
+                                }*/
+
+                                //String[] parts = s.split(" ");
+                                //ParseQuery<ParseObject> searchFullName = ParseQuery.getQuery("Contact");
+                                //searchFullName.whereStartsWith("fullName", st);
+
+
+                                //ParseQuery<ParseObject> mainSearch = ParseQuery.or(search);
+                                ParseQuery<ParseObject> mainSearch = ParseQuery.getQuery("Contact");
+                                mainSearch.whereStartsWith("fullName", s);
                                 mainSearch.whereContainedIn("ownerId", friends);
                                 mainSearch.whereEqualTo("hidden", false);
                                 mainSearch.orderByAscending("firstName");
@@ -232,7 +255,7 @@ public class MainActivity extends ActionBarActivity implements ActionBar.TabList
                                             }
                                         } else {
                                             Log.d("cl.snatch.snatch", "error: " + e.getMessage());
-
+                                            pb.setText(getString(R.string.no_result));
                                         }
                                     }
                                 });
